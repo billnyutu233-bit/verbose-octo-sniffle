@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="RestaurantOS restaurant inventory and operations dashboard demo.">
+  <title>RestaurantOS | Management Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="RestaurantOS home">
+        <span class="brand-mark">R<span>O</span></span>
+        <span><strong>RestaurantOS</strong><small>MANAGEMENT SUITE</small></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="nav">
+        <button class="nav-link active" data-page="dashboard"><span>▦</span> Dashboard</button>
+        <button class="nav-link" data-page="inventory"><span>▤</span> Inventory <b id="navStockCount">0</b></button>
+        <button class="nav-link" data-page="orders"><span>◷</span> Sales & Orders</button>
+        <button class="nav-link" data-page="reports"><span>▥</span> Reports</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card"><span class="help-icon">✦</span><strong>Keep operations smooth</strong><p>Track stock, record sales and spot low inventory before it runs out.</p></div>
+        <button class="nav-link" data-page="settings"><span>⚙</span> Settings</button>
+        <div class="user-mini"><div class="avatar">AD</div><div><strong>Administrator</strong><small>Demo workspace</small></div><span class="online-dot"></span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="menuToggle" aria-label="Toggle menu">☰</button>
+        <div class="breadcrumb">Workspace <span>/</span> <strong id="pageCrumb">Dashboard</strong></div>
+        <div class="top-actions"><span class="status-pill"><i></i> System demo</span><button class="icon-btn" id="exportBtn" title="Export inventory CSV">⇩</button><div class="top-avatar">AD</div></div>
+      </header>
+
+      <section class="page active" id="page-dashboard">
+        <div class="welcome-row"><div><p class="eyebrow">OVERVIEW</p><h1>Good day, Administrator <span>✦</span></h1><p class="subheading">Here’s what’s happening in your restaurant today.</p></div><button class="primary-btn" id="quickSaleBtn">＋ Record a sale</button></div>
+        <div class="metric-grid">
+          <article class="metric-card"><div class="metric-top"><span>Total menu items</span><span class="metric-icon blue">▤</span></div><strong id="metricItems">0</strong><small><span class="muted">Across your inventory</span></small></article>
+          <article class="metric-card"><div class="metric-top"><span>Stock value</span><span class="metric-icon teal">◈</span></div><strong id="metricValue">KSh 0</strong><small><span class="muted">Based on current quantity</span></small></article>
+          <article class="metric-card"><div class="metric-top"><span>Sales recorded</span><span class="metric-icon purple">↗</span></div><strong id="metricSales">0</strong><small><span class="muted">Transactions in this browser</span></small></article>
+          <article class="metric-card"><div class="metric-top"><span>Low-stock alerts</span><span class="metric-icon orange">⚠</span></div><strong id="metricLow">0</strong><small><span class="muted">Items at or below minimum</span></small></article>
+        </div>
+        <div class="content-grid">
+          <article class="panel inventory-panel"><div class="panel-heading"><div><h2>Inventory overview</h2><p>Latest items in your stock list</p></div><button class="text-btn" data-goto="inventory">View inventory →</button></div><div class="table-wrap"><table><thead><tr><th>ITEM</th><th>CATEGORY</th><th>QUANTITY</th><th>STATUS</th></tr></thead><tbody id="dashboardInventory"></tbody></table></div></article>
+          <article class="panel alerts-panel"><div class="panel-heading"><div><h2>Stock alerts</h2><p>Items that need attention</p></div><span class="alert-count" id="alertCount">0</span></div><div id="alertsList" class="alerts-list"></div><button class="secondary-btn full" data-goto="inventory">Manage inventory</button></article>
+        </div>
+        <div class="bottom-grid">
+          <article class="panel"><div class="panel-heading"><div><h2>Recent activity</h2><p>Sales and stock updates</p></div><button class="text-btn" data-goto="orders">All activity →</button></div><div id="recentActivity" class="activity-list"></div></article>
+          <article class="tip-card"><div class="tip-symbol">✦</div><p class="eyebrow">OPERATIONS TIP</p><h2>Stay ahead of stock shortages</h2><p>Set a minimum stock level for each ingredient or menu item. RestaurantOS will flag items when quantities fall below that level.</p><button class="secondary-btn" data-goto="inventory">Review stock levels <span>→</span></button></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-inventory">
+        <div class="welcome-row"><div><p class="eyebrow">STOCK CONTROL</p><h1>Inventory</h1><p class="subheading">Manage menu items, quantities, categories and stock alerts.</p></div><button class="primary-btn" id="addItemBtn">＋ Add inventory item</button></div>
+        <div class="toolbar"><div class="search-box"><span>⌕</span><input id="inventorySearch" placeholder="Search items or categories..." aria-label="Search inventory"></div><select id="categoryFilter" aria-label="Filter by category"><option value="">All categories</option></select><select id="statusFilter" aria-label="Filter by stock status"><option value="">All stock status</option><option value="low">Low stock</option><option value="healthy">Healthy</option></select></div>
+        <article class="panel"><div class="panel-heading"><div><h2>Stock list</h2><p id="inventorySummary">All inventory items</p></div><span class="subtle-tag">Live in this browser</span></div><div class="table-wrap"><table><thead><tr><th>ITEM</th><th>CATEGORY</th><th>UNIT PRICE</th><th>QUANTITY</th><th>MIN. LEVEL</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="inventoryTable"></tbody></table></div><div id="emptyInventory" class="empty-state" hidden><span>▤</span><strong>No inventory items found</strong><p>Try a different search or add your first item.</p></div></article>
+      </section>
+
+      <section class="page" id="page-orders">
+        <div class="welcome-row"><div><p class="eyebrow">TRANSACTION LOG</p><h1>Sales & Orders</h1><p class="subheading">Record a sale and review recent transactions.</p></div><button class="primary-btn" id="ordersSaleBtn">＋ Record a sale</button></div>
+        <div class="metric-grid two-metrics"><article class="metric-card"><div class="metric-top"><span>Total transactions</span><span class="metric-icon blue">◷</span></div><strong id="ordersCount">0</strong><small class="muted">Recorded in this browser</small></article><article class="metric-card"><div class="metric-top"><span>Total sales value</span><span class="metric-icon teal">↗</span></div><strong id="ordersRevenue">KSh 0</strong><small class="muted">All recorded transactions</small></article></div>
+        <article class="panel"><div class="panel-heading"><div><h2>Recent transactions</h2><p>Sales history for this demo</p></div></div><div class="table-wrap"><table><thead><tr><th>REFERENCE</th><th>ITEM</th><th>QUANTITY</th><th>TOTAL</th><th>DATE & TIME</th></tr></thead><tbody id="ordersTable"></tbody></table></div><div id="emptyOrders" class="empty-state" hidden><span>◷</span><strong>No sales recorded yet</strong><p>Record a sale to see it appear here.</p></div></article>
+      </section>
+
+      <section class="page" id="page-reports">
+        <div class="welcome-row"><div><p class="eyebrow">BUSINESS INSIGHTS</p><h1>Reports</h1><p class="subheading">A quick summary of inventory and recorded sales.</p></div><button class="secondary-btn" id="reportExportBtn">⇩ Export inventory CSV</button></div>
+        <div class="metric-grid"><article class="metric-card"><div class="metric-top"><span>Inventory items</span><span class="metric-icon blue">▤</span></div><strong id="reportItems">0</strong><small class="muted">Unique stock records</small></article><article class="metric-card"><div class="metric-top"><span>Inventory value</span><span class="metric-icon teal">◈</span></div><strong id="reportValue">KSh 0</strong><small class="muted">Current quantity × unit price</small></article><article class="metric-card"><div class="metric-top"><span>Units in stock</span><span class="metric-icon purple">▥</span></div><strong id="reportUnits">0</strong><small class="muted">Total units available</small></article><article class="metric-card"><div class="metric-top"><span>Sales revenue</span><span class="metric-icon orange">↗</span></div><strong id="reportRevenue">KSh 0</strong><small class="muted">All recorded transactions</small></article></div>
+        <div class="content-grid"><article class="panel"><div class="panel-heading"><div><h2>Inventory by category</h2><p>Current stock value grouped by category</p></div></div><div id="categoryReport" class="category-report"></div></article><article class="panel"><div class="panel-heading"><div><h2>Stock health</h2><p>Items requiring a restock</p></div></div><div class="health-summary" id="healthSummary"></div></article></div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="welcome-row"><div><p class="eyebrow">PREFERENCES</p><h1>Settings</h1><p class="subheading">Configure this browser-based project demo.</p></div></div>
+        <article class="panel settings-panel"><div class="panel-heading"><div><h2>Workspace settings</h2><p>Demo data is saved in this browser using local storage.</p></div></div><div class="setting-row"><div><strong>Restaurant name</strong><p>Shown in the workspace branding.</p></div><input id="restaurantName" value="RestaurantOS" maxlength="50"></div><div class="setting-row"><div><strong>Currency</strong><p>Currency used for item prices and sales.</p></div><select id="currencySelect"><option value="KSh">Kenyan Shilling (KSh)</option><option value="$">US Dollar ($)</option><option value="£">Pound Sterling (£)</option></select></div><div class="setting-row"><div><strong>Restore sample data</strong><p>Replace browser data with the original sample inventory and clear sales.</p></div><button class="secondary-btn" id="resetDataBtn">Restore sample data</button></div><div class="setting-row danger-row"><div><strong>Clear all data</strong><p>Remove inventory and sales saved in this browser.</p></div><button class="danger-btn" id="clearDataBtn">Clear data</button></div><p class="note">This is a static GitHub Pages project. It has no server-side database or real authentication. Data stays in the current browser and is not shared with other users or devices.</p></article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="itemModal" hidden><div class="modal"><div class="modal-head"><div><p class="eyebrow">INVENTORY</p><h2 id="itemModalTitle">Add inventory item</h2></div><button class="close-btn" data-close="itemModal" aria-label="Close">×</button></div><form id="itemForm"><input type="hidden" id="itemId"><label>Item name<input id="itemName" required maxlength="80" placeholder="e.g. Fresh tomatoes"></label><div class="form-row"><label>Category<input id="itemCategory" required maxlength="50" placeholder="e.g. Vegetables"></label><label>Unit price (KSh)<input id="itemPrice" type="number" required min="0" step="0.01" placeholder="0.00"></label></div><div class="form-row"><label>Quantity in stock<input id="itemQuantity" type="number" required min="0" step="1" placeholder="0"></label><label>Minimum stock level<input id="itemMinimum" type="number" required min="0" step="1" placeholder="5"></label></div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="itemModal">Cancel</button><button class="primary-btn" type="submit">Save item</button></div></form></div></div>
+
+  <div class="modal-backdrop" id="saleModal" hidden><div class="modal"><div class="modal-head"><div><p class="eyebrow">SALES</p><h2>Record a sale</h2></div><button class="close-btn" data-close="saleModal" aria-label="Close">×</button></div><form id="saleForm"><label>Inventory item<select id="saleItem" required></select></label><label>Quantity sold<input id="saleQuantity" type="number" min="1" step="1" value="1" required></label><div class="sale-preview" id="salePreview">Select an item to calculate the total.</div><p class="form-hint">Recording a sale deducts the sold quantity from stock.</p><div class="modal-actions"><button type="button" class="secondary-btn" data-close="saleModal">Cancel</button><button class="primary-btn" type="submit">Confirm sale</button></div></form></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <footer class="site-footer">RestaurantOS <span>•</span> Student project demo <span>•</span> Static GitHub Pages edition</footer>
+  <script src="script.js"></script>
+</body>
+</html>
