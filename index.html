@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="RestaurantOS restaurant inventory and operations dashboard.">
 <title>RestaurantOS | Management Dashboard</title>
-<script src="https://google.com" async defer></script>
+
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <style>
 :root{--ink:#24252a;--muted:#85858b;--orange:#ed8b20;--orange-dark:#d97712;--line:#ececf0;--bg:#f6f7f9;--navy:#202632}
 *{box-sizing:border-box}
@@ -27,20 +30,9 @@ button,input,select{font:inherit}button{cursor:pointer}
 .login-panel{background:#fff;border-radius:0 34px 34px 0;padding:34px clamp(25px,5vw,58px);display:flex;flex-direction:column;justify-content:center;min-height:460px}
 .login-logo{text-align:right;color:#b77a27;font-size:15px;font-weight:700;margin-bottom:28px}
 .login-logo span{display:inline-block;border:1px solid #dca34f;border-radius:50%;padding:4px 7px;margin-right:5px}
-.login-panel h2{font-size:20px;font-weight:500;margin:0 0 22px}
-.login-panel label{font-size:11px;color:#555;display:block;margin:0 0 7px}
-.login-panel input{width:100%;border:1px solid #eee;background:#f1f1f1;border-radius:7px;padding:13px 14px;margin-bottom:17px;outline:none;font-size:12px}
-.login-panel input:focus{border-color:#e6a04b;background:#fff}
-.password-wrap{position:relative}.password-wrap input{padding-right:45px}
-.show-pass{position:absolute;right:10px;top:8px;border:0;background:transparent;color:#777;font-size:17px}
-.login-submit{width:100%;border:0;border-radius:7px;background:var(--orange);color:white;padding:13px;font-size:12px;margin-top:1px;box-shadow:0 2px 4px #ed8b2030}
-.login-submit:hover{background:var(--orange-dark)}
+.login-panel h2{font-size:20px;font-weight:500;margin:0 0 12px}
 .login-error{color:#b42318;font-size:12px;min-height:18px;margin:8px 0 0;text-align:center}
-.login-foot{text-align:center;color:#777;font-size:11px;margin-top:20px}
-.login-foot span{display:inline-block;width:28%;height:1px;background:#ccc;vertical-align:middle;margin:0 9px}
-.login-note{text-align:center;color:#777;font-size:11px;margin-top:20px;cursor:pointer}
-.login-note strong{color:var(--orange)}
-.google-container{display:flex;justify-content:center;margin-top:15px}
+.google-box-wrapper {display:flex;flex-direction:column;align-items:center;justify-content:center;margin:20px 0;min-height:50px}
 .app-shell{display:flex;min-height:100vh}
 .sidebar{width:250px;background:#202632;color:#fff;padding:25px 17px;display:flex;flex-direction:column;flex-shrink:0}
 .brand{display:flex;gap:12px;align-items:center;color:#fff;text-decoration:none;padding:4px 9px 34px}
@@ -104,32 +96,22 @@ button,input,select{font:inherit}button{cursor:pointer}
         <div class="visual-content">
           <small>VERSION 4.2</small>
           <h2>Streamline Everything</h2>
-          <p>Sign up using either a unique username or email address to launch your portal layout window immediately.</p>
+          <p>Access your portal environment dashboard panel workspace smoothly using Google Secure Identity protocols.</p>
           <div class="dots"><i></i><i></i><i></i></div>
         </div>
       </div>
 
       <div class="login-panel">
         <div class="login-logo"><span>R</span>OS</div>
-        <h2 id="authTitle">Sign Up</h2>
-        
-        <form id="authForm">
-          <label for="userCredential" id="credentialLabel">Choose Username or Email</label>
-          <input type="text" id="userCredential" required>
+        <h2>Sign In</h2>
+        <p style="font-size: 12px; color: #666; margin: 0 0 15px;">Authenticate using your official company workspace profile address below:</p>
 
-          <label for="userPassword">Password</label>
-          <div class="password-wrap">
-            <input type="password" id="userPassword" required>
-          </div>
-
-          <button type="submit" class="login-submit" id="authSubmitBtn">Create Free Account</button>
-        </form>
+        <!-- FIX: Official secure container wrapper element for Google Sign-In injection -->
+        <div class="google-box-wrapper">
+          <div id="googleButtonDiv"></div>
+        </div>
 
         <div class="login-error" id="authErrorMessage"></div>
-
-        <p class="login-note" id="toggleAuthMode">
-          Already have an account? <strong>Sign In Instead</strong>
-        </p>
       </div>
     </div>
   </div>
@@ -145,3 +127,31 @@ button,input,select{font:inherit}button{cursor:pointer}
       </div>
     </a>
     <div class="side-label">CORE MANAGEMENT</div>
+    <nav class="nav">
+      <button class="nav-link active"><span>📊</span> Overview</button>
+      <button class="nav-link"><span>📦</span> Inventory <b>12</b></button>
+      <button class="nav-link"><span>📋</span> Kitchen Orders</button>
+      <button class="nav-link"><span>📈</span> Analytics</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="help-card">
+        <div class="help-icon">💡</div>
+        <strong>Need Help?</strong>
+        <p>Access our kitchen onboarding guide documentation instantly.</p>
+      </div>
+      <div class="user-mini">
+        <div class="avatar" id="userAvatar">U</div>
+        <div>
+          <strong id="displayUsername">User Profile</strong>
+          <small id="displayUserType">Standard Operator</small>
+        </div>
+        <div class="online-dot"></div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">🚪 Log Out Dashboard</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">RestaurantOS <span>/</span> <strong>Dashboard Overview</strong></div>
+      <div class="top-actions">
