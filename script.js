@@ -1,76 +1,106 @@
-const STORAGE_KEY = "restaurantOSGithubPagesV1";
-const sampleItems = [
-  {id:1,name:"Fresh Tomatoes",category:"Vegetables",price:120,quantity:8,minimum:10,icon:"🍅"},
-  {id:2,name:"Chicken Breast",category:"Meat & Poultry",price:650,quantity:18,minimum:8,icon:"🍗"},
-  {id:3,name:"White Rice",category:"Grains",price:180,quantity:35,minimum:12,icon:"🍚"},
-  {id:4,name:"Cooking Oil",category:"Pantry",price:320,quantity:6,minimum:8,icon:"🫒"},
-  {id:5,name:"Fresh Milk",category:"Dairy",price:75,quantity:24,minimum:10,icon:"🥛"},
-  {id:6,name:"Lettuce",category:"Vegetables",price:90,quantity:3,minimum:8,icon:"🥬"}
-];
-let state = loadState();
-let toastTimer;
-function loadState(){try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY));if(saved&&Array.isArray(saved.items)&&Array.isArray(saved.sales))return saved;}catch(e){}return {items:structuredClone(sampleItems),sales:[],currency:"KSh",restaurantName:"RestaurantOS",activity:[{text:"Sample inventory loaded",detail:"Demo workspace is ready",date:new Date().toISOString()}]};}
-function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
-function money(n){return `${state.currency||"KSh"} ${Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:0,maximumFractionDigits:2})}`;}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function itemStatus(item){return item.quantity<=0?"out":item.quantity<=item.minimum?"low":"healthy";}
-function statusLabel(item){const s=itemStatus(item);return s==="out"?"Out of stock":s==="low"?"Low stock":"Healthy";}
-function iconFor(item){return item.icon||({"Vegetables":"🥬","Meat & Poultry":"🍗","Grains":"🍚","Dairy":"🥛","Pantry":"🫙"}[item.category]||"🍽️");}
-function formatDate(date){return new Date(date).toLocaleString("en-KE",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});}
-function addActivity(text,detail){state.activity.unshift({text,detail,date:new Date().toISOString()});state.activity=state.activity.slice(0,10);}
-function showToast(message){const el=document.getElementById("toast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2800);}
-function emptyRow(cols,message){return `<tr><td colspan="${cols}" style="text-align:center;color:#9aa4b5;padding:28px">${message}</td></tr>`;}
-function render(){renderDashboard();renderInventory();renderOrders();renderReports();document.getElementById("navStockCount").textContent=state.items.length;document.getElementById("restaurantName").value=state.restaurantName||"RestaurantOS";document.getElementById("currencySelect").value=state.currency||"KSh";document.title=`${state.restaurantName||"RestaurantOS"} | Management Dashboard`;}
-function renderDashboard(){
- const low=state.items.filter(i=>itemStatus(i)!=="healthy"),value=state.items.reduce((a,i)=>a+i.price*i.quantity,0);
- document.getElementById("metricItems").textContent=state.items.length;document.getElementById("metricValue").textContent=money(value);document.getElementById("metricSales").textContent=state.sales.length;document.getElementById("metricLow").textContent=low.length;
- document.getElementById("dashboardInventory").innerHTML=state.items.slice(0,5).map(i=>`<tr><td><div class="item-cell"><span class="item-thumb">${iconFor(i)}</span><div><div class="item-name">${esc(i.name)}</div><div class="item-sub">SKU-${String(i.id).padStart(4,"0")}</div></div></div></td><td>${esc(i.category)}</td><td>${i.quantity} units</td><td><span class="status ${itemStatus(i)}">${statusLabel(i)}</span></td></tr>`).join("")||emptyRow(4,"No items yet. Add inventory to get started.");
- document.getElementById("alertsList").innerHTML=low.slice(0,5).map(i=>`<div class="alert-row"><div class="alert-icon">⚠</div><div class="alert-info"><strong>${esc(i.name)}</strong><small>${i.quantity<=0?"No stock remaining":`Minimum level: ${i.minimum} units`}</small></div><span class="alert-qty">${i.quantity} left</span></div>`).join("")||`<div class="empty-state"><span>✓</span><strong>All stock levels look good</strong><p>No items need attention.</p></div>`;
- document.getElementById("alertCount").textContent=low.length;
- const recent=[...state.sales.map(s=>({text:`Sale recorded: ${s.itemName}`,detail:`${s.quantity} units • ${money(s.total)}`,date:s.date,icon:"↗"})),...(state.activity||[]).map(a=>({...a,icon:"✦"}))].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,4);
- document.getElementById("recentActivity").innerHTML=recent.map(a=>`<div class="activity-row"><div class="activity-icon">${a.icon||"✦"}</div><div><strong>${esc(a.text)}</strong><p>${esc(a.detail||"")}</p><time>${formatDate(a.date)}</time></div></div>`).join("")||`<p class="muted">No recent activity.</p>`;
+// Toggle state tracking variable
+let isSignUpMode = true; 
+
+// DOM References
+const authTitle = document.getElementById('authTitle');
+const credentialLabel = document.getElementById('credentialLabel');
+const userCredentialInput = document.getElementById('userCredential');
+const userPasswordInput = document.getElementById('userPassword');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const toggleAuthModeBtn = document.getElementById('toggleAuthMode');
+const authErrorMessage = document.getElementById('authErrorMessage');
+
+const loginScreen = document.getElementById('loginScreen');
+const appDashboard = document.getElementById('appDashboard');
+const logoutBtn = document.getElementById('logoutBtn');
+const welcomeName = document.getElementById('welcomeName');
+const displayUsername = document.getElementById('displayUsername');
+const userAvatar = document.getElementById('userAvatar');
+
+// Switch logic between Sign Up UI and Sign In UI forms
+toggleAuthModeBtn.addEventListener('click', () => {
+  isSignUpMode = !isSignUpMode;
+  authErrorMessage.textContent = ""; // Clear errors
+  
+  if (isSignUpMode) {
+    authTitle.textContent = "Sign Up";
+    credentialLabel.textContent = "Choose Username or Email";
+    userCredentialInput.placeholder = "e.g. chef_mario or admin@cafe.com";
+    authSubmitBtn.textContent = "Create Free Account";
+    toggleAuthModeBtn.innerHTML = 'Already have an account? <strong>Sign In Instead</strong>';
+  } else {
+    authTitle.textContent = "Sign In";
+    credentialLabel.textContent = "Enter Username or Email";
+    userCredentialInput.placeholder = "Your username or email address";
+    authSubmitBtn.textContent = "Enter Dashboard";
+    toggleAuthModeBtn.innerHTML = 'Need a new account? <strong>Sign Up Now</strong>';
+  }
+});
+
+// Authentication Handling Routine via Browser LocalStorage Mock Database Backend Layer
+document.getElementById('authForm').addEventListener('submit', (event) => {
+  event.preventDefault();
+  authErrorMessage.textContent = ""; // Reset Error Banner
+
+  const credential = userCredentialInput.value.trim().toLowerCase();
+  const password = userPasswordInput.value;
+
+  if (password.length < 6) {
+    authErrorMessage.textContent = "Password must be at least 6 characters long.";
+    return;
+  }
+
+  // Retrieve existing local database array records
+  let accountsDB = JSON.parse(localStorage.getItem('restaurantOS_users')) || [];
+
+  if (isSignUpMode) {
+    // Check if Username or Email is already occupied
+    const profileExists = accountsDB.some(account => account.identifier === credential);
+    if (profileExists) {
+      authErrorMessage.textContent = "This username or email is already registered.";
+      return;
+    }
+
+    // Save profile record into Mock Storage
+    const newProfile = { identifier: credential, password: password };
+    accountsDB.push(newProfile);
+    localStorage.setItem('restaurantOS_users', JSON.stringify(accountsDB));
+
+    // Grant Session Entry Access straight into app layout
+    launchDashboardApp(credential);
+  } else {
+    // Process login routine lookup query logic
+    const matchedAccount = accountsDB.find(account => account.identifier === credential && account.password === password);
+    if (!matchedAccount) {
+      authErrorMessage.textContent = "Invalid username/email or password credentials.";
+      return;
+    }
+
+    launchDashboardApp(credential);
+  }
+});
+
+// Launch function logic
+function launchDashboardApp(usernameOrEmail) {
+  // Clear credential entry parameters securely
+  userCredentialInput.value = "";
+  userPasswordInput.value = "";
+
+  // Beautify UI displaying string name strings nicely
+  let cleanName = usernameOrEmail.split('@')[0]; // Split if email, take first part
+  cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+
+  welcomeName.textContent = cleanName;
+  displayUsername.textContent = cleanName;
+  userAvatar.textContent = cleanName.charAt(0).toUpperCase();
+
+  // Dynamic Page Presentation Switch layout display states
+  loginScreen.style.display = 'none';
+  appDashboard.style.display = 'flex';
 }
-function renderInventory(){
- const search=(document.getElementById("inventorySearch")?.value||"").toLowerCase(),category=document.getElementById("categoryFilter")?.value||"",status=document.getElementById("statusFilter")?.value||"";
- const categories=[...new Set(state.items.map(i=>i.category))].sort(),catSelect=document.getElementById("categoryFilter"),current=catSelect.value;
- catSelect.innerHTML='<option value="">All categories</option>'+categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");catSelect.value=categories.includes(current)?current:"";
- const filtered=state.items.filter(i=>(`${i.name} ${i.category}`.toLowerCase().includes(search))&&(!category||i.category===category)&&(!status||(status==="low"?itemStatus(i)!=="healthy":itemStatus(i)==="healthy")));
- document.getElementById("inventorySummary").textContent=`Showing ${filtered.length} of ${state.items.length} inventory items`;
- document.getElementById("inventoryTable").innerHTML=filtered.map(i=>`<tr><td><div class="item-cell"><span class="item-thumb">${iconFor(i)}</span><div><div class="item-name">${esc(i.name)}</div><div class="item-sub">SKU-${String(i.id).padStart(4,"0")}</div></div></div></td><td>${esc(i.category)}</td><td>${money(i.price)}</td><td><strong style="color:#344158">${i.quantity}</strong> units</td><td>${i.minimum} units</td><td><span class="status ${itemStatus(i)}">${statusLabel(i)}</span></td><td><div class="action-group"><button class="small-action" data-edit="${i.id}">Edit</button><button class="small-action delete" data-delete="${i.id}">Delete</button></div></td></tr>`).join("")||emptyRow(7,"No matching inventory items.");
- document.getElementById("emptyInventory").hidden=filtered.length!==0;
-}
-function renderOrders(){
- const total=state.sales.reduce((a,s)=>a+s.total,0);document.getElementById("ordersCount").textContent=state.sales.length;document.getElementById("ordersRevenue").textContent=money(total);
- document.getElementById("ordersTable").innerHTML=state.sales.map(s=>`<tr><td><strong>${esc(s.reference)}</strong></td><td>${esc(s.itemName)}</td><td>${s.quantity}</td><td><strong>${money(s.total)}</strong></td><td>${formatDate(s.date)}</td></tr>`).join("")||emptyRow(5,"No sales recorded yet.");
- document.getElementById("emptyOrders").hidden=state.sales.length!==0;
-}
-function renderReports(){
- const value=state.items.reduce((a,i)=>a+i.price*i.quantity,0),units=state.items.reduce((a,i)=>a+i.quantity,0),revenue=state.sales.reduce((a,s)=>a+s.total,0),low=state.items.filter(i=>itemStatus(i)!=="healthy");
- document.getElementById("reportItems").textContent=state.items.length;document.getElementById("reportValue").textContent=money(value);document.getElementById("reportUnits").textContent=units;document.getElementById("reportRevenue").textContent=money(revenue);
- const groups={};state.items.forEach(i=>{groups[i.category]=(groups[i.category]||0)+i.price*i.quantity;});const max=Math.max(1,...Object.values(groups));
- document.getElementById("categoryReport").innerHTML=Object.entries(groups).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="category-row"><div class="category-meta"><strong>${esc(c)}</strong><span>${money(v)}</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(2,v/max*100)}%"></div></div></div>`).join("")||"<p class='muted'>No category data yet.</p>";
- document.getElementById("healthSummary").innerHTML=`<div class="health-row"><span>Healthy stock items</span><strong style="color:#159c8b">${state.items.filter(i=>itemStatus(i)==="healthy").length}</strong></div><div class="health-row"><span>Low-stock items</span><strong style="color:#d68a16">${state.items.filter(i=>itemStatus(i)==="low").length}</strong></div><div class="health-row"><span>Out of stock</span><strong style="color:#d64b5c">${state.items.filter(i=>itemStatus(i)==="out").length}</strong></div><div class="health-row"><span>Restock attention</span><strong>${low.length}</strong></div>`;
-}
-function goPage(page){document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===`page-${page}`));document.querySelectorAll(".nav-link[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));document.getElementById("pageCrumb").textContent=page[0].toUpperCase()+page.slice(1);document.getElementById("sidebar").classList.remove("open");}
-function openItemModal(id=null){const item=state.items.find(i=>i.id===Number(id));document.getElementById("itemForm").reset();document.getElementById("itemId").value=item?.id||"";document.getElementById("itemModalTitle").textContent=item?"Edit inventory item":"Add inventory item";document.getElementById("itemName").value=item?.name||"";document.getElementById("itemCategory").value=item?.category||"";document.getElementById("itemPrice").value=item?.price??"";document.getElementById("itemQuantity").value=item?.quantity??"";document.getElementById("itemMinimum").value=item?.minimum??5;document.getElementById("itemModal").hidden=false;}
-function openSaleModal(){const select=document.getElementById("saleItem");select.innerHTML=state.items.filter(i=>i.quantity>0).map(i=>`<option value="${i.id}">${esc(i.name)} — ${i.quantity} in stock (${money(i.price)})</option>`).join("");if(!select.options.length){showToast("Add stock before recording a sale.");return;}document.getElementById("saleQuantity").value=1;document.getElementById("saleModal").hidden=false;updateSalePreview();}
-function updateSalePreview(){const item=state.items.find(i=>i.id===Number(document.getElementById("saleItem").value)),qty=Math.max(1,Number(document.getElementById("saleQuantity").value||1));document.getElementById("salePreview").textContent=item?`Total: ${money(item.price*qty)} • ${item.quantity} units available`:"Select an item to calculate the total.";}
-function exportCSV(){const rows=[["Item","Category","Unit price","Quantity","Minimum level","Stock value","Status"],...state.items.map(i=>[i.name,i.category,i.price,i.quantity,i.minimum,(i.price*i.quantity).toFixed(2),statusLabel(i)])];const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\r\n");const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="restaurant-inventory.csv";a.click();URL.revokeObjectURL(url);showToast("Inventory CSV exported.");}
-document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.page)));
-document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.goto)));
-document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>document.getElementById(b.dataset.close).hidden=true));
-document.getElementById("menuToggle").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("open"));
-document.getElementById("addItemBtn").addEventListener("click",()=>openItemModal());
-document.getElementById("quickSaleBtn").addEventListener("click",openSaleModal);document.getElementById("ordersSaleBtn").addEventListener("click",openSaleModal);
-document.getElementById("exportBtn").addEventListener("click",exportCSV);document.getElementById("reportExportBtn").addEventListener("click",exportCSV);
-document.getElementById("inventorySearch").addEventListener("input",renderInventory);document.getElementById("categoryFilter").addEventListener("change",renderInventory);document.getElementById("statusFilter").addEventListener("change",renderInventory);
-document.getElementById("inventoryTable").addEventListener("click",e=>{const edit=e.target.closest("[data-edit]"),del=e.target.closest("[data-delete]");if(edit)openItemModal(edit.dataset.edit);if(del){const item=state.items.find(i=>i.id===Number(del.dataset.delete));if(item&&confirm(`Delete "${item.name}" from inventory?`)){state.items=state.items.filter(i=>i.id!==item.id);addActivity("Inventory item deleted",item.name);saveState();render();showToast("Inventory item deleted.");}}});
-document.getElementById("itemForm").addEventListener("submit",e=>{e.preventDefault();const id=Number(document.getElementById("itemId").value),name=document.getElementById("itemName").value.trim(),category=document.getElementById("itemCategory").value.trim(),price=Number(document.getElementById("itemPrice").value),quantity=Number(document.getElementById("itemQuantity").value),minimum=Number(document.getElementById("itemMinimum").value);if(!name||!category||price<0||quantity<0||minimum<0)return;const old=state.items.find(i=>i.id===id),item={id:id||Math.max(0,...state.items.map(i=>i.id))+1,name,category,price,quantity,minimum,icon:old?.icon||""};if(old){state.items=state.items.map(i=>i.id===id?item:i);addActivity("Inventory item updated",name);}else{state.items.unshift(item);addActivity("Inventory item added",name);}saveState();render();document.getElementById("itemModal").hidden=true;showToast(old?"Inventory item updated.":"Inventory item added.");});
-document.getElementById("saleItem").addEventListener("change",updateSalePreview);document.getElementById("saleQuantity").addEventListener("input",updateSalePreview);
-document.getElementById("saleForm").addEventListener("submit",e=>{e.preventDefault();const item=state.items.find(i=>i.id===Number(document.getElementById("saleItem").value)),quantity=Number(document.getElementById("saleQuantity").value);if(!item||quantity<1||quantity>item.quantity){showToast("Enter a valid quantity within available stock.");return;}const sale={reference:"SAL-"+Date.now().toString().slice(-7),itemId:item.id,itemName:item.name,quantity,total:item.price*quantity,date:new Date().toISOString()};item.quantity-=quantity;state.sales.unshift(sale);addActivity("Sale recorded",`${quantity} × ${item.name}`);saveState();render();document.getElementById("saleModal").hidden=true;showToast("Sale recorded and stock updated.");});
-document.getElementById("restaurantName").addEventListener("change",e=>{state.restaurantName=e.target.value.trim()||"RestaurantOS";saveState();render();showToast("Restaurant name updated.");});
-document.getElementById("currencySelect").addEventListener("change",e=>{state.currency=e.target.value;saveState();render();showToast("Currency updated.");});
-document.getElementById("resetDataBtn").addEventListener("click",()=>{if(confirm("Restore sample inventory and clear sales?")){state={items:structuredClone(sampleItems),sales:[],currency:state.currency||"KSh",restaurantName:state.restaurantName||"RestaurantOS",activity:[{text:"Sample data restored",detail:"Demo inventory restored",date:new Date().toISOString()}]};saveState();render();showToast("Sample data restored.");}});
-document.getElementById("clearDataBtn").addEventListener("click",()=>{if(confirm("Clear all inventory and sales saved in this browser?")){state.items=[];state.sales=[];state.activity=[{text:"Workspace data cleared",detail:"All inventory and sales removed",date:new Date().toISOString()}];saveState();render();showToast("All browser data cleared.");}});
-document.querySelectorAll(".modal-backdrop").forEach(backdrop=>backdrop.addEventListener("click",e=>{if(e.target===backdrop)backdrop.hidden=true;}));
-render();
+
+// Log out screen switch routine reset execution layer
+logoutBtn.addEventListener('click', () => {
+  appDashboard.style.display = 'none';
+  loginScreen.style.display = 'flex';
+});
