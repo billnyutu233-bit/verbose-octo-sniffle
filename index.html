@@ -39,9 +39,10 @@ button,input,select{font:inherit}button{cursor:pointer}
 .login-error{color:#b42318;font-size:12px;min-height:18px;margin:8px 0 0;text-align:center}
 .login-foot{text-align:center;color:#777;font-size:11px;margin-top:20px}
 .login-foot span{display:inline-block;width:28%;height:1px;background:#ccc;vertical-align:middle;margin:0 9px}
-.login-note{text-align:center;color:#777;font-size:11px;margin-top:20px}
+.login-note{text-align:center;color:#777;font-size:11px;margin-top:20px;cursor:pointer}
+.login-note strong{color:var(--orange)}
 .google-container{display:flex;justify-content:center;margin-top:15px}
-.app-shell{display:none;min-height:100vh}
+.app-shell{display:flex;min-height:100vh}
 .sidebar{width:250px;background:#202632;color:#fff;padding:25px 17px;display:flex;flex-direction:column;flex-shrink:0}
 .brand{display:flex;gap:12px;align-items:center;color:#fff;text-decoration:none;padding:4px 9px 34px}
 .brand-mark{background:#ed8b20;border-radius:10px;padding:9px 10px;font-weight:800}.brand-mark span{color:#202632}
@@ -91,46 +92,51 @@ button,input,select{font:inherit}button{cursor:pointer}
 </head>
 <body>
 
-<!-- Login Layer -->
+<!-- Login Layer Box Screen -->
 <div id="loginScreen">
   <div class="login-wrap">
     <div class="login-heading">
-      <h1>RestaurantOS</h1>
+      <h1>Welcome to RestaurantOS</h1>
       <div class="gold-line"></div>
-      <p>Enterprise Operations & Inventory Dashboard Setup</p>
+      <p>Manage your culinary inventory, logs, and restaurant workflow smoothly.</p>
     </div>
+
     <div class="tablet">
+      <!-- Visual Side Panel -->
       <div class="login-visual">
         <div class="visual-content">
-          <small>V3.4 CORE RUNTIME</small>
-          <h2>Streamline Kitchen & Stock Control.</h2>
-          <p>Access absolute management tools, clean metric arrays, and real-time vendor supply channels.</p>
+          <small>VERSION 4.2</small>
+          <h2>Streamline Everything</h2>
+          <p>Sign up using either a simple unique username or your business email to open your dashboard portal immediately.</p>
           <div class="dots"><i></i><i></i><i></i></div>
         </div>
       </div>
+
+      <!-- Action Panel Form -->
       <div class="login-panel">
         <div class="login-logo"><span>R</span>OS</div>
-        <h2>Sign in to Workspace</h2>
+        <h2 id="authTitle">Sign Up</h2>
         
-        <label>EMAIL ADDRESS</label>
-        <input type="email" id="emailInput" placeholder="manager@restaurant.com" value="admin@restaurantos.io">
-        
-        <label>PASSWORD</label>
-        <div class="password-wrap">
-          <input type="password" id="passInput" placeholder="••••••••" value="password123">
-        </div>
-        
-        <button class="login-submit" onclick="demoLogin()">Sign In with Credentials</button>
-        <div id="loginError" class="login-error"></div>
-        
-        <div class="login-foot"><span></span> OR <span></span></div>
-        
-        
-        <div class="google-container">
-          <div id="g_id_onload"
-               data-client_id="://googleusercontent.com"
-               data-context="signin"
-               data-ux_mode="popup"
-               data-callback="handleGoogleLogin"
-               data-auto_prompt="false">
+        <form id="authForm">
+          <label for="userCredential" id="credentialLabel">Choose Username or Email</label>
+          <input type="text" id="userCredential" placeholder="e.g. chef_mario or admin@cafe.com" required>
+
+          <label for="userPassword">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="userPassword" placeholder="Minimum 6 characters" required>
           </div>
+
+          <button type="submit" class="login-submit" id="authSubmitBtn">Create Free Account</button>
+        </form>
+
+        <div class="login-error" id="authErrorMessage"></div>
+
+        <p class="login-note" id="toggleAuthMode">
+          Already have an account? <strong>Sign In Instead</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Application Dashboard Shell Layout Layer -->
