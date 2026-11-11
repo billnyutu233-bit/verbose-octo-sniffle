@@ -46,6 +46,7 @@
   </div>
 </div>
 
+<!-- Google Sign-In Modal -->
 <div class="g-modal-backdrop" id="googleModal">
   <div class="g-modal">
     <svg width="28" height="28" viewBox="0 0 48 48">
@@ -67,6 +68,29 @@
   </div>
 </div>
 
+<!-- Add / Edit Stock Modal -->
+<div class="g-modal-backdrop" id="stockModal">
+  <div class="g-modal modal-left">
+    <h3 id="stockModalTitle">Add Stock Item</h3>
+    <p>Enter ingredient details to update your kitchen inventory.</p>
+    <form id="stockForm">
+      <input type="hidden" id="editStockIndex" value="-1">
+      <input type="text" id="stockNameInput" placeholder="Item Name (e.g. Atlantic Salmon)" required>
+      <input type="text" id="stockCategoryInput" placeholder="Category (e.g. Seafood, Produce)" required>
+      <input type="text" id="stockQtyInput" placeholder="Quantity (e.g. 14 kg, 5 Liters)" required>
+      <select id="stockStatusInput" class="modal-select">
+        <option value="ok">Optimal</option>
+        <option value="low">Low Stock</option>
+      </select>
+      <div class="g-modal-actions">
+        <button type="button" class="g-btn-cancel" onclick="closeStockModal()">Cancel</button>
+        <button type="submit" class="g-btn-next">Save Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Dashboard Shell -->
 <div class="app-shell" id="appDashboard">
   <aside class="sidebar">
     <a href="#" class="brand">
@@ -78,10 +102,10 @@
     </a>
     <div class="side-label">CORE MANAGEMENT</div>
     <nav class="nav">
-      <button type="button" class="nav-link active" data-view="overviewView"><span>📊</span> Overview</button>
-      <button type="button" class="nav-link" data-view="inventoryView"><span>📦</span> Inventory <b>12</b></button>
-      <button type="button" class="nav-link" data-view="ordersView"><span>📋</span> Kitchen Orders</button>
-      <button type="button" class="nav-link" data-view="analyticsView"><span>📈</span> Analytics</button>
+      <button class="nav-link active" data-view="overviewView"><span>📊</span> Overview</button>
+      <button class="nav-link" data-view="inventoryView"><span>📦</span> Inventory <b id="lowStockBadge">1</b></button>
+      <button class="nav-link" data-view="ordersView"><span>📋</span> Kitchen Orders</button>
+      <button class="nav-link" data-view="analyticsView"><span>📈</span> Analytics</button>
     </nav>
     <div class="sidebar-bottom">
       <div class="help-card">
@@ -97,7 +121,7 @@
         </div>
         <div class="online-dot"></div>
       </div>
-      <button type="button" class="logout-btn" id="logoutBtn">🚪 Log Out Dashboard</button>
+      <button class="logout-btn" id="logoutBtn">🚪 Log Out Dashboard</button>
     </div>
   </aside>
 
@@ -106,12 +130,12 @@
       <div class="breadcrumb">RestaurantOS <span>/</span> <strong id="currentPageTitle">Dashboard Overview</strong></div>
       <div class="top-actions">
         <span class="status-pill"><i></i> System Operational</span>
-        <button type="button" class="icon-btn">🔔</button>
+        <button class="icon-btn">🔔</button>
       </div>
     </div>
     
     <div class="page">
-      <!-- 1. OVERVIEW PANEL -->
+      <!-- 1. OVERVIEW VIEW -->
       <div id="overviewView" class="view-section">
         <div class="welcome-row">
           <div>
@@ -119,7 +143,7 @@
             <h1>Welcome Back, <span id="welcomeName">Chef</span>!</h1>
             <p class="subheading">Here is what is happening across your cloud kitchen stations today.</p>
           </div>
-          <button type="button" class="primary-btn" id="quickAddStockBtn">+ Add Stock Item</button>
+          <button class="primary-btn" onclick="openStockModal()">+ Add Stock Item</button>
         </div>
 
         <div class="metric-grid">
@@ -130,7 +154,7 @@
           </div>
           <div class="metric-card">
             <div class="metric-top">Low Stock Items <span class="metric-icon orange">⚠️</span></div>
-            <strong>12 Items</strong>
+            <strong id="lowStockCardCount">1 Item</strong>
             <small>Critical reorder levels</small>
           </div>
           <div class="metric-card">
@@ -146,7 +170,7 @@
         </div>
       </div>
 
-      <!-- 2. INVENTORY PANEL -->
+      <!-- 2. INVENTORY VIEW -->
       <div id="inventoryView" class="view-section" style="display: none;">
         <div class="welcome-row">
           <div>
@@ -154,23 +178,25 @@
             <h1>Kitchen Inventory</h1>
             <p class="subheading">Track ingredient levels, suppliers, and low-stock alerts.</p>
           </div>
+          <button class="primary-btn" onclick="openStockModal()">+ Add Stock Item</button>
         </div>
         <div class="data-card">
           <table class="data-table">
             <thead>
-              <tr><th>Item Name</th><th>Category</th><th>In Stock</th><th>Status</th></tr>
+              <tr>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>In Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
             </thead>
-            <tbody>
-              <tr><td>Fresh Atlantic Salmon</td><td>Seafood</td><td>14 kg</td><td><span class="badge ok">Optimal</span></td></tr>
-              <tr><td>Extra Virgin Olive Oil</td><td>Pantry</td><td>3 Liters</td><td><span class="badge low">Low Stock</span></td></tr>
-              <tr><td>San Marzano Tomatoes</td><td>Produce</td><td>42 Cans</td><td><span class="badge ok">Optimal</span></td></tr>
-              <tr><td>Arborio Risotto Rice</td><td>Grains</td><td>25 kg</td><td><span class="badge ok">Optimal</span></td></tr>
-            </tbody>
+            <tbody id="inventoryTableBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 3. KITCHEN ORDERS PANEL -->
+      <!-- 3. KITCHEN ORDERS VIEW -->
       <div id="ordersView" class="view-section" style="display: none;">
         <div class="welcome-row">
           <div>
@@ -190,20 +216,10 @@
             <strong>06m 15s</strong>
             <small>3x Margherita Pizza, 2x Caesar Salad</small>
           </div>
-          <div class="metric-card">
-            <div class="metric-top">Order #1044 — Table 9 <span class="metric-icon purple">🔥</span></div>
-            <strong>03m 45s</strong>
-            <small>1x Pan-Seared Salmon, 1x Risotto</small>
-          </div>
-          <div class="metric-card">
-            <div class="metric-top">Order #1045 — Pickup <span class="metric-icon teal">✅</span></div>
-            <strong>Ready</strong>
-            <small>2x Chicken Alfredo, 2x Garlic Bread</small>
-          </div>
         </div>
       </div>
 
-      <!-- 4. ANALYTICS PANEL -->
+      <!-- 4. ANALYTICS VIEW -->
       <div id="analyticsView" class="view-section" style="display: none;">
         <div class="welcome-row">
           <div>
@@ -212,33 +228,3 @@
             <p class="subheading">Weekly revenue breakdown and ingredient efficiency metrics.</p>
           </div>
         </div>
-        <div class="metric-grid">
-          <div class="metric-card">
-            <div class="metric-top">Weekly Gross Revenue <span class="metric-icon teal">📈</span></div>
-            <strong>$28,940.00</strong>
-            <small>▲ 11.2% vs last week</small>
-          </div>
-          <div class="metric-card">
-            <div class="metric-top">Food Cost Percentage <span class="metric-icon purple">🧾</span></div>
-            <strong>27.4%</strong>
-            <small>Target benchmark: under 30%</small>
-          </div>
-          <div class="metric-card">
-            <div class="metric-top">Avg Ticket Value <span class="metric-icon blue">💳</span></div>
-            <strong>$46.80</strong>
-            <small>▲ $3.15 vs last month</small>
-          </div>
-          <div class="metric-card">
-            <div class="metric-top">Top Performing Dish <span class="metric-icon orange">⭐</span></div>
-            <strong>Grilled Ribeye</strong>
-            <small>148 orders this week</small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-</div>
-
-<script src="auth.js"></script>
-</body>
-</html>
