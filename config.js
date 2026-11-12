@@ -3,6 +3,6 @@
 // NEVER put your Supabase service_role key in this file.
 
 window.RMS_CONFIG = {
-  SUPABASE_URL: "YOUR_SUPABASE_PROJECT_URL",
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_PUBLIC_KEY"
+  SUPABASE_URL: "https://wcgvrxjxdnhyxqbgogdg.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_hFIolfyCR2vc-5UXYiTFiA_bfdyNAm6"
 };
