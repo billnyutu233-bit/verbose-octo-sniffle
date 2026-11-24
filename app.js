@@ -4,9 +4,14 @@
     !cfg.SUPABASE_URL.includes('YOUR-PROJECT') &&
     !cfg.SUPABASE_ANON_KEY.includes('YOUR_');
 
-  const client = ready && window.supabase
-    ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY)
-    : null;
+  let client = null;
+  try {
+    if (ready && window.supabase && typeof window.supabase.createClient === 'function') {
+      client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+    }
+  } catch (err) {
+    console.error('Supabase init error:', err);
+  }
 
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -50,6 +55,14 @@
     $('#login-form-wrap')?.classList.toggle('hidden', tab !== 'login');
     $('#signup-form-wrap')?.classList.toggle('hidden', tab !== 'signup');
   }
+
+  // Attach tab switchers right away so buttons are never dormant
+  $$('[data-auth-tab]').forEach(btn =>
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      showAuth(btn.dataset.authTab);
+    })
+  );
 
   function showApp(user, profile) {
     currentUser = user;
@@ -104,27 +117,24 @@
   async function refreshSession() {
     if (!client) {
       showAuth();
-      toast('Add your Supabase URL and anon key in config.js to connect the website.', 'error');
+      toast('Supabase connection not ready. Check config.js and your internet connection.', 'error');
       return;
     }
 
-    const { data: { session }, error } = await client.auth.getSession();
-    if (error) toast(error.message, 'error');
+    try {
+      const { data: { session }, error } = await client.auth.getSession();
+      if (error) toast(error.message, 'error');
 
-    if (session?.user) {
-      showApp(session.user, await loadProfile(session.user));
-    } else {
+      if (session?.user) {
+        showApp(session.user, await loadProfile(session.user));
+      } else {
+        showAuth();
+      }
+    } catch (err) {
+      console.error('Session check failed:', err);
       showAuth();
     }
   }
-
-  // Attach tab switchers immediately
-  $$('[data-auth-tab]').forEach(btn =>
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      showAuth(btn.dataset.authTab);
-    })
-  );
 
   $('#login-form')?.addEventListener('submit', async e => {
     e.preventDefault();
@@ -197,6 +207,7 @@
   $('#google-signup')?.addEventListener('click', googleAuth);
 
   $('#logout-btn')?.addEventListener('click', async () => {
+    if (!client) return showAuth();
     const { error } = await client.auth.signOut();
     if (error) return toast(error.message, 'error');
     showAuth();
@@ -294,11 +305,3 @@
           <small>${latestPay ? escapeHTML(latestPay.month_label) : 'No records yet'}</small>
         </div>
         <div class="stat-card">
-          <div class="stat-label">PAYMENT STATUS</div>
-          <div class="stat-value">${latestPay ? escapeHTML(latestPay.payment_status.toUpperCase()) : '—'}</div>
-          <small>Updated by management</small>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-top:1.5rem;">
-        <h2>My Duty Roster & Shifts</h2>
