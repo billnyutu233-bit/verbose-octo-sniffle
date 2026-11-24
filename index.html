@@ -26,13 +26,13 @@
         <div id="auth-debug-msg" style="display:none;background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"></div>
 
         <div class="auth-tabs">
-          <button type="button" id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Sign in</button>
-          <button type="button" id="tab-signup" class="auth-tab" onclick="switchAuthTab('signup')">Create account</button>
+          <button type="button" id="tab-login" class="auth-tab active">Sign in</button>
+          <button type="button" id="tab-signup" class="auth-tab">Create account</button>
         </div>
 
         <section id="login-form-wrap">
           <h2>Sign in</h2>
-          <button type="button" id="google-login" class="google-btn" onclick="startGoogleLogin()">
+          <button type="button" id="google-login" class="google-btn">
             <span class="google-mark">G</span>Continue with Google
           </button>
           <div class="or-line"><span>OR</span></div>
@@ -45,7 +45,7 @@
 
         <section id="signup-form-wrap" class="hidden">
           <h2>Create account</h2>
-          <button type="button" id="google-signup" class="google-btn" onclick="startGoogleLogin()">
+          <button type="button" id="google-signup" class="google-btn">
             <span class="google-mark">G</span>Sign up with Google
           </button>
           <div class="or-line"><span>OR</span></div>
@@ -98,37 +98,21 @@
     </section>
   </div>
 
-  <script>
-    function showAuthError(msg) {
-      var box = document.getElementById('auth-debug-msg');
-      if (box) { box.style.display = 'block'; box.textContent = msg; }
-    }
-    function switchAuthTab(tab) {
-      var isSignup = tab === 'signup';
+  <script type="module">
+    window.switchAuthTab = (tab) => {
+      const isSignup = tab === 'signup';
       document.getElementById('login-form-wrap').classList.toggle('hidden', isSignup);
       document.getElementById('signup-form-wrap').classList.toggle('hidden', !isSignup);
       document.getElementById('tab-login').classList.toggle('active', !isSignup);
       document.getElementById('tab-signup').classList.toggle('active', isSignup);
-    }
-    function startGoogleLogin() {
-      var cfg = window.RMS_CONFIG || {};
-      if (!window.supabase) return showAuthError('Still loading database library. Wait 2 seconds and click again.');
-      if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return showAuthError('Missing keys in config.js.');
-      var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
-      sb.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + window.location.pathname }
-      }).then(function(r) { if (r.error) showAuthError(r.error.message); });
-    }
-  </script>
+    };
 
-  <script src="config.js?v=9"></script>
-  <script type="module">
-    import { createClient } from 'https://esm.sh';
-    window.supabase = { createClient };
-    const s = document.createElement('script');
-    s.src = 'app.js?v=9';
-    document.body.appendChild(s);
+    document.getElementById('tab-login').addEventListener('click', () => window.switchAuthTab('login'));
+    document.getElementById('tab-signup').addEventListener('click', () => window.switchAuthTab('signup'));
+    document.getElementById('google-login').addEventListener('click', () => window.startGoogleLogin?.());
+    document.getElementById('google-signup').addEventListener('click', () => window.startGoogleLogin?.());
   </script>
+  <script type="module" src="./config.js?v=11"></script>
+  <script type="module" src="./app.js?v=11"></script>
 </body>
 </html>
