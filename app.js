@@ -1,8 +1,8 @@
 (() => {
   const cfg = window.RMS_CONFIG || {};
   const ready = cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY &&
-    !cfg.SUPABASE_URL.includes('https://wcgvrxjxdnhyxqbgogdg.supabase.co') &&
-    !cfg.SUPABASE_ANON_KEY.includes('sb_publishable_hFIolfyCR2vc-5UXYiTFiA_bfdyNAm6');
+    !cfg.SUPABASE_URL.includes('YOUR-PROJECT') &&
+    !cfg.SUPABASE_ANON_KEY.includes('YOUR_');
 
   const client = ready && window.supabase
     ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY)
