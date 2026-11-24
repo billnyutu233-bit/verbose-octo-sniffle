@@ -1,70 +1,85 @@
 (() => {
   const cfg = window.RMS_CONFIG || {};
-  const ready = cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY &&
-    !cfg.SUPABASE_URL.includes('YOUR-PROJECT') &&
-    !cfg.SUPABASE_ANON_KEY.includes('YOUR_');
-
-  let client = null;
-  try {
-    if (ready && window.supabase && typeof window.supabase.createClient === 'function') {
-      client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
-    }
-  } catch (err) {
-    console.error('Supabase init error:', err);
-  }
+  const URL = (cfg.SUPABASE_URL || '').replace(/\/$/, '');
+  const KEY = cfg.SUPABASE_ANON_KEY || '';
 
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
-  const money = n => new Intl.NumberFormat('en-KE', {
-    style: 'currency', currency: 'KES'
-  }).format(Number(n || 0));
-
-  const dateTime = value => value ? new Date(value).toLocaleString() : '—';
+  const money = n => new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(Number(n || 0));
+  const dateTime = v => v ? new Date(v).toLocaleString() : '—';
   const today = () => new Date().toISOString().slice(0, 10);
-  let currentProfile = null;
-  let currentUser = null;
 
-  function escapeHTML(value = '') {
-    return String(value).replace(/[&<>"']/g, c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[c]));
+  let session = JSON.parse(localStorage.getItem('rms_session') || 'null');
+  let currentProfile = null;
+
+  function escapeHTML(v = '') {
+    return String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
-  function toast(message, type = 'success') {
+  function toast(msg, type = 'success') {
+    const box = $('#auth-debug-msg');
+    if (box && !$('#auth-screen').classList.contains('hidden')) {
+      box.style.display = 'block';
+      box.style.background = type === 'error' ? '#fee2e2' : '#dcfce7';
+      box.style.color = type === 'error' ? '#991b1b' : '#166534';
+      box.textContent = msg;
+    }
     const region = $('#toast-region');
     if (!region) return;
     const el = document.createElement('div');
     el.className = `toast ${type === 'error' ? 'error' : ''}`;
-    el.textContent = message;
+    el.textContent = msg;
     region.append(el);
     setTimeout(() => el.remove(), 4200);
+  }
+
+  // Direct Supabase REST & Auth helper (zero external libraries needed)
+  async function sbFetch(path, options = {}) {
+    if (!URL || !KEY || URL.includes('YOUR')) throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY in config.js');
+    const headers = {
+      'apikey': KEY,
+      'Content-Type': 'application/json',
+      ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : { 'Authorization': `Bearer ${KEY}` }),
+      ...(options.headers || {})
+    };
+    const res = await fetch(`${URL}${path}`, { ...options, headers });
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : null;
+    if (!res.ok) throw new Error(data?.msg || data?.error_description || data?.message || `Error ${res.status}`);
+    return data;
+  }
+
+  // Override Google login to work directly without external SDK
+  window.startGoogleLogin = () => {
+    if (!URL || URL.includes('YOUR')) return toast('Missing SUPABASE_URL in config.js', 'error');
+    const redirect = encodeURIComponent(window.location.origin + window.location.pathname);
+    window.location.href = `${URL}/auth/v1/authorize?provider=google&redirect_to=${redirect}`;
+  };
+
+  function saveSession(s) {
+    session = s;
+    if (s) localStorage.setItem('rms_session', JSON.stringify(s));
+    else localStorage.removeItem('rms_session');
   }
 
   function showAuth(tab = 'login') {
     $('#auth-screen')?.classList.remove('hidden');
     $('#app-shell')?.classList.add('hidden');
-
-    $$('[data-auth-tab]').forEach(b =>
-      b.classList.toggle('active', b.dataset.authTab === tab)
-    );
-
-    $('#login-form-wrap')?.classList.toggle('hidden', tab !== 'login');
-    $('#signup-form-wrap')?.classList.toggle('hidden', tab !== 'signup');
+    if (window.switchAuthTab) window.switchAuthTab(tab);
   }
 
-  $$('[data-auth-tab]').forEach(btn =>
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      showAuth(btn.dataset.authTab);
-    })
-  );
+  async function loadProfile(user) {
+    try {
+      const rows = await sbFetch(`/rest/v1/profiles?id=eq.${user.id}&select=*`);
+      if (rows && rows.length > 0) return rows[0];
+    } catch (e) {
+      console.warn('Profile fetch:', e.message);
+    }
+    const fallback = user.email ? user.email.split('@')[0] : 'User';
+    return { id: user.id, role: 'staff', full_name: user.user_metadata?.full_name || fallback };
+  }
 
   function showApp(user, profile) {
-    currentUser = user;
     currentProfile = profile;
     $('#auth-screen')?.classList.add('hidden');
     $('#app-shell')?.classList.remove('hidden');
@@ -75,242 +90,141 @@
     $$('.manager-only').forEach(el => el.classList.toggle('hidden', !isManager));
     $$('.staff-only').forEach(el => el.classList.toggle('hidden', isManager));
 
-    const fallbackName = user.email ? user.email.split('@')[0] : 'Restaurant User';
-    const name = String(
-      profile?.full_name ||
-      user.user_metadata?.full_name ||
-      user.user_metadata?.name ||
-      fallbackName
-    );
-
+    const name = String(profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User');
     $('#user-name').textContent = `${name} (${role.toUpperCase()})`;
     $('#user-email').textContent = user.email || '';
     $('#user-avatar').textContent = name.charAt(0).toUpperCase();
     $('#top-avatar').textContent = name.charAt(0).toUpperCase();
+    $('#top-date').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-    $('#top-date').textContent = new Date().toLocaleDateString(undefined, {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-
-    const defaultPage = isManager ? 'dashboard' : 'portal';
-    navigate(location.hash.replace('#', '') || defaultPage);
+    navigate(location.hash.replace('#', '') || (isManager ? 'dashboard' : 'portal'));
   }
 
-  async function loadProfile(user) {
-    const fallbackName = user.email ? user.email.split('@')[0] : 'Restaurant User';
-    try {
-      const { data, error } = await client
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (error) console.warn('Profile lookup:', error.message);
-
-      if (data) return data;
-    } catch (err) {
-      console.warn('Profile fetch error:', err);
-    }
-
-    return {
-      id: user.id,
-      role: 'staff',
-      full_name: user.user_metadata?.full_name ||
-        user.user_metadata?.name ||
-        fallbackName
-    };
-  }
-
-  async function initAuth() {
-    if (!client) {
-      showAuth();
-      toast('Supabase connection not ready. Check config.js.', 'error');
-      return;
-    }
-
-    // Listen for login / OAuth callback events automatically
-    client.auth.onAuthStateChange(async (event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
-        if (!currentUser || currentUser.id !== session.user.id) {
-          const profile = await loadProfile(session.user);
-          showApp(session.user, profile);
+  async function init() {
+    // Handle Google OAuth redirect token in URL hash
+    if (location.hash.includes('access_token=')) {
+      const params = new URLSearchParams(location.hash.substring(1));
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      if (access_token) {
+        history.replaceState(null, '', location.pathname);
+        session = { access_token, refresh_token };
+        try {
+          const user = await sbFetch('/auth/v1/user');
+          saveSession({ access_token, refresh_token, user });
+          showApp(user, await loadProfile(user));
+          return;
+        } catch (e) {
+          saveSession(null);
         }
-      } else if (event === 'SIGNED_OUT') {
-        currentUser = null;
-        currentProfile = null;
-        showAuth();
       }
-    });
-
-    try {
-      const { data: { session }, error } = await client.auth.getSession();
-      if (error) toast(error.message, 'error');
-
-      if (session?.user) {
-        const profile = await loadProfile(session.user);
-        showApp(session.user, profile);
-      } else {
-        showAuth();
-      }
-    } catch (err) {
-      console.error('Session check failed:', err);
-      showAuth();
     }
+
+    if (session?.access_token) {
+      try {
+        const user = await sbFetch('/auth/v1/user');
+        saveSession({ ...session, user });
+        showApp(user, await loadProfile(user));
+        return;
+      } catch (e) {
+        saveSession(null);
+      }
+    }
+    showAuth('login');
   }
 
   $('#login-form')?.addEventListener('submit', async e => {
     e.preventDefault();
-    if (!client) return toast('Configure Supabase in config.js first.', 'error');
-
     const f = new FormData(e.currentTarget);
-    const button = e.currentTarget.querySelector('button[type=submit]');
-    button.disabled = true;
-
-    const { data, error } = await client.auth.signInWithPassword({
-      email: String(f.get('email')).trim(),
-      password: f.get('password')
-    });
-
-    button.disabled = false;
-    if (error) return toast(error.message, 'error');
-
-    const profile = await loadProfile(data.user);
-    showApp(data.user, profile);
-    toast('Welcome back.');
+    const btn = e.currentTarget.querySelector('button[type=submit]');
+    btn.disabled = true;
+    try {
+      const data = await sbFetch('/auth/v1/token?grant_type=password', {
+        method: 'POST',
+        body: JSON.stringify({ email: String(f.get('email')).trim(), password: f.get('password') })
+      });
+      saveSession(data);
+      showApp(data.user, await loadProfile(data.user));
+      toast('Welcome back.');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   $('#signup-form')?.addEventListener('submit', async e => {
     e.preventDefault();
-    if (!client) return toast('Configure Supabase in config.js first.', 'error');
-
     const f = new FormData(e.currentTarget);
     const name = String(f.get('name')).trim();
     const email = String(f.get('email')).trim();
     const password = String(f.get('password'));
-
-    if (password.length < 8) {
-      return toast('Use a password with at least 8 characters.', 'error');
-    }
-
-    const button = e.currentTarget.querySelector('button[type=submit]');
-    button.disabled = true;
-
-    const { data, error } = await client.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: name },
-        emailRedirectTo: location.origin + location.pathname
+    const btn = e.currentTarget.querySelector('button[type=submit]');
+    btn.disabled = true;
+    try {
+      const data = await sbFetch('/auth/v1/signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, data: { full_name: name } })
+      });
+      if (data.access_token) {
+        saveSession(data);
+        showApp(data.user, await loadProfile(data.user));
+        toast('Account created successfully.');
+      } else {
+        e.currentTarget.reset();
+        toast('Account created! Check email to confirm or turn off Confirm Email in Supabase.');
+        showAuth('login');
       }
-    });
-
-    button.disabled = false;
-    if (error) return toast(error.message, 'error');
-
-    if (data.session) {
-      const profile = await loadProfile(data.user);
-      showApp(data.user, profile);
-      toast('Account created successfully.');
-    } else {
-      e.currentTarget.reset();
-      toast('Account created. Check your email to confirm, then sign in.');
-      showAuth('login');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      btn.disabled = false;
     }
   });
 
-  async function googleAuth() {
-    if (!client) return toast('Configure Supabase in config.js first.', 'error');
-    const { error } = await client.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: location.origin + location.pathname }
-    });
-    if (error) toast(error.message, 'error');
-  }
-
-  $('#google-login')?.addEventListener('click', googleAuth);
-  $('#google-signup')?.addEventListener('click', googleAuth);
-
-  $('#logout-btn')?.addEventListener('click', async () => {
-    if (!client) return showAuth();
-    const { error } = await client.auth.signOut();
-    if (error) return toast(error.message, 'error');
-    currentUser = null;
+  $('#logout-btn')?.addEventListener('click', () => {
+    saveSession(null);
     currentProfile = null;
-    showAuth();
-    toast('You have signed out.');
+    showAuth('login');
   });
 
-  $('#menu-toggle')?.addEventListener('click', () =>
-    $('#sidebar')?.classList.toggle('open')
-  );
+  $('#menu-toggle')?.addEventListener('click', () => $('#sidebar')?.classList.toggle('open'));
 
   function navigate(page) {
     const isManager = (currentProfile?.role || 'staff') === 'manager';
-    const managerPages = ['dashboard', 'shifts', 'payroll', 'menu', 'orders', 'reports'];
-    const staffPages = ['portal'];
-    const allowed = isManager ? managerPages : staffPages;
-
+    const allowed = isManager ? ['dashboard', 'shifts', 'payroll', 'menu', 'orders', 'reports'] : ['portal'];
     if (!allowed.includes(page)) page = isManager ? 'dashboard' : 'portal';
 
     history.replaceState(null, '', `#${page}`);
-
-    $$('.nav-link').forEach(b =>
-      b.classList.toggle('active', b.dataset.page === page)
-    );
-
+    $$('.nav-link').forEach(b => b.classList.toggle('active', b.dataset.page === page));
     $('#sidebar')?.classList.remove('open');
 
-    const renderer = {
-      dashboard: renderDashboard,
-      shifts: renderShiftsAdmin,
-      payroll: renderPayrollAdmin,
-      menu: renderMenu,
-      orders: renderOrders,
-      reports: renderReports,
-      portal: renderStaffPortal
-    };
-
+    const views = { dashboard: renderDashboard, shifts: renderShiftsAdmin, payroll: renderPayrollAdmin, menu: renderMenu, orders: renderOrders, reports: renderReports, portal: renderStaffPortal };
     $('#page-content').innerHTML = '<div class="loading-state">Loading…</div>';
-
-    renderer[page]().catch(err => {
-      console.error(err);
-      $('#page-content').innerHTML =
-        `<div class="notice error">Unable to load this section: ${escapeHTML(err.message)}</div>`;
-      toast(err.message || 'Unable to load data.', 'error');
+    views[page]().catch(err => {
+      $('#page-content').innerHTML = `<div class="notice error">${escapeHTML(err.message)}</div>`;
     });
   }
 
-  $$('.nav-link').forEach(b =>
-    b.addEventListener('click', () => navigate(b.dataset.page))
-  );
+  $$('.nav-link').forEach(b => b.addEventListener('click', () => navigate(b.dataset.page)));
+  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) navigate(g.dataset.go); });
 
-  document.addEventListener('click', e => {
-    const go = e.target.closest('[data-go]');
-    if (go) navigate(go.dataset.go);
-  });
-
-  window.addEventListener('hashchange', () => {
-    if (client && currentProfile) navigate(location.hash.slice(1));
-  });
-
-  // 1. STAFF PORTAL VIEW
+  // STAFF PORTAL
   async function renderStaffPortal() {
-    const uid = currentUser.id;
-    const [
-      { data: shifts, error: e1 },
-      { data: records, error: e2 }
-    ] = await Promise.all([
-      client.from('staff_shifts').select('*').eq('staff_id', uid).order('shift_date', { ascending: false }),
-      client.from('staff_records').select('*').eq('staff_id', uid).order('created_at', { ascending: false })
+    const uid = session.user.id;
+    const [shifts, records] = await Promise.all([
+      sbFetch(`/rest/v1/staff_shifts?staff_id=eq.${uid}&order=shift_date.desc`),
+      sbFetch(`/rest/v1/staff_records?staff_id=eq.${uid}&order=created_at.desc`)
     ]);
-
-    if (e1) throw e1;
-    if (e2) throw e2;
-
-    const latestPay = (records || [])[0];
-    const netPay = latestPay ? (Number(latestPay.base_pay) + Number(latestPay.bonus_or_tips) - Number(latestPay.deductions)) : 0;
+    const latest = records?.[0];
+    const netPay = latest ? (Number(latest.base_pay) + Number(latest.bonus_or_tips) - Number(latest.deductions)) : 0;
 
     $('#page-content').innerHTML = `
-      <div class="page-heading">
-        <div>
-          <p class="eyebrow">STAFF PORTAL</p>
+      <div class="page-heading"><div><p class="eyebrow">STAFF PORTAL</p><h1>Welcome, ${escapeHTML(currentProfile?.full_name || 'Staff')}</h1></div></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">ASSIGNED SHIFTS</div><div class="stat-value">${shifts.length}</div></div>
+        <div class="stat-card"><div class="stat-label">LATEST NET PAY</div><div class="stat-value">${money(netPay)}</div></div>
+        <div class="stat-card"><div class="stat-label">STATUS</div><div class="stat-value">${latest ? escapeHTML(latest.payment_status.toUpperCase()) : '—'}</div></div>
+      </div>
+      <div class="panel" style="margin-top:1.5rem;"><h2>My Shifts</h2><div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Time</th><th>Station</th><th>Status</th></tr></thead>
