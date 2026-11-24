@@ -56,9 +56,8 @@
     $('#signup-form-wrap')?.classList.toggle('hidden', tab !== 'signup');
   }
 
-  // Attach tab switchers right away so buttons are never dormant
   $$('[data-auth-tab]').forEach(btn =>
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', e => {
       e.preventDefault();
       showAuth(btn.dataset.authTab);
     })
@@ -77,10 +76,12 @@
     $$('.staff-only').forEach(el => el.classList.toggle('hidden', isManager));
 
     const fallbackName = user.email ? user.email.split('@')[0] : 'Restaurant User';
-    const name = profile?.full_name ||
+    const name = String(
+      profile?.full_name ||
       user.user_metadata?.full_name ||
       user.user_metadata?.name ||
-      fallbackName;
+      fallbackName
+    );
 
     $('#user-name').textContent = `${name} (${role.toUpperCase()})`;
     $('#user-email').textContent = user.email || '';
@@ -96,16 +97,22 @@
   }
 
   async function loadProfile(user) {
-    const { data, error } = await client
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (error) console.warn('Profile lookup:', error.message);
-
     const fallbackName = user.email ? user.email.split('@')[0] : 'Restaurant User';
-    return data || {
+    try {
+      const { data, error } = await client
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) console.warn('Profile lookup:', error.message);
+
+      if (data) return data;
+    } catch (err) {
+      console.warn('Profile fetch error:', err);
+    }
+
+    return {
       id: user.id,
       role: 'staff',
       full_name: user.user_metadata?.full_name ||
@@ -114,19 +121,34 @@
     };
   }
 
-  async function refreshSession() {
+  async function initAuth() {
     if (!client) {
       showAuth();
-      toast('Supabase connection not ready. Check config.js and your internet connection.', 'error');
+      toast('Supabase connection not ready. Check config.js.', 'error');
       return;
     }
+
+    // Listen for login / OAuth callback events automatically
+    client.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+        if (!currentUser || currentUser.id !== session.user.id) {
+          const profile = await loadProfile(session.user);
+          showApp(session.user, profile);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        currentProfile = null;
+        showAuth();
+      }
+    });
 
     try {
       const { data: { session }, error } = await client.auth.getSession();
       if (error) toast(error.message, 'error');
 
       if (session?.user) {
-        showApp(session.user, await loadProfile(session.user));
+        const profile = await loadProfile(session.user);
+        showApp(session.user, profile);
       } else {
         showAuth();
       }
@@ -152,7 +174,8 @@
     button.disabled = false;
     if (error) return toast(error.message, 'error');
 
-    showApp(data.user, await loadProfile(data.user));
+    const profile = await loadProfile(data.user);
+    showApp(data.user, profile);
     toast('Welcome back.');
   });
 
@@ -185,11 +208,12 @@
     if (error) return toast(error.message, 'error');
 
     if (data.session) {
-      showApp(data.user, await loadProfile(data.user));
+      const profile = await loadProfile(data.user);
+      showApp(data.user, profile);
       toast('Account created successfully.');
     } else {
       e.currentTarget.reset();
-      toast('Account created. Check your email to confirm your address, then sign in.');
+      toast('Account created. Check your email to confirm, then sign in.');
       showAuth('login');
     }
   });
@@ -210,6 +234,8 @@
     if (!client) return showAuth();
     const { error } = await client.auth.signOut();
     if (error) return toast(error.message, 'error');
+    currentUser = null;
+    currentProfile = null;
     showAuth();
     toast('You have signed out.');
   });
@@ -288,20 +314,3 @@
       <div class="page-heading">
         <div>
           <p class="eyebrow">STAFF PORTAL</p>
-          <h1>Welcome, ${escapeHTML(currentProfile?.full_name || 'Staff Member')}</h1>
-          <p class="muted">View your assigned duty shifts, performance notes, and payroll status.</p>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">ASSIGNED SHIFTS</div>
-          <div class="stat-value">${(shifts || []).length}</div>
-          <small>Total scheduled duties</small>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">LATEST NET PAY</div>
-          <div class="stat-value">${money(netPay)}</div>
-          <small>${latestPay ? escapeHTML(latestPay.month_label) : 'No records yet'}</small>
-        </div>
-        <div class="stat-card">
