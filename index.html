@@ -31,9 +31,12 @@
       <div class="auth-card">
         <div class="brand brand-dark">RMS<span>.</span></div>
 
+        <!-- Visible status box so you immediately see if config.js or Supabase has an issue -->
+        <div id="auth-debug-msg" style="display:none;background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"></div>
+
         <div class="auth-tabs">
-          <button type="button" class="auth-tab active" data-auth-tab="login">Sign in</button>
-          <button type="button" class="auth-tab" data-auth-tab="signup">Create account</button>
+          <button type="button" id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Sign in</button>
+          <button type="button" id="tab-signup" class="auth-tab" onclick="switchAuthTab('signup')">Create account</button>
         </div>
 
         <section id="login-form-wrap">
@@ -41,7 +44,7 @@
           <h2>Sign in to your account</h2>
           <p class="subtext">Enter your details to continue to your workspace.</p>
 
-          <button type="button" id="google-login" class="google-btn">
+          <button type="button" id="google-login" class="google-btn" onclick="startGoogleLogin()">
             <span class="google-mark">G</span>Continue with Google
           </button>
 
@@ -57,7 +60,7 @@
             <button class="btn btn-primary full" type="submit">Sign in <span>→</span></button>
           </form>
 
-          <p class="auth-switch">New to RMS? <button type="button" data-auth-tab="signup">Create an account</button></p>
+          <p class="auth-switch">New to RMS? <button type="button" onclick="switchAuthTab('signup')">Create an account</button></p>
         </section>
 
         <section id="signup-form-wrap" class="hidden">
@@ -65,7 +68,7 @@
           <h2>Create your account</h2>
           <p class="subtext">Register with your email or Google account.</p>
 
-          <button type="button" id="google-signup" class="google-btn">
+          <button type="button" id="google-signup" class="google-btn" onclick="startGoogleLogin()">
             <span class="google-mark">G</span>Sign up with Google
           </button>
 
@@ -84,7 +87,7 @@
             <button class="btn btn-primary full" type="submit">Create account <span>→</span></button>
           </form>
 
-          <p class="auth-switch">Already registered? <button type="button" data-auth-tab="login">Sign in</button></p>
+          <p class="auth-switch">Already registered? <button type="button" onclick="switchAuthTab('login')">Sign in</button></p>
         </section>
 
         <p class="auth-legal">By continuing, you agree to use this system responsibly and protect your account credentials.</p>
@@ -146,9 +149,55 @@
 
   <div id="modal-root"></div>
 
-  <!-- Scripts placed at the bottom of body so all HTML elements exist first -->
+  <!-- Inline failsafe script: guarantees tabs and Google button ALWAYS respond -->
+  <script>
+    function showAuthError(msg) {
+      var box = document.getElementById('auth-debug-msg');
+      if (box) {
+        box.style.display = 'block';
+        box.textContent = msg;
+      }
+    }
+
+    function switchAuthTab(tab) {
+      var loginWrap = document.getElementById('login-form-wrap');
+      var signupWrap = document.getElementById('signup-form-wrap');
+      var tabLogin = document.getElementById('tab-login');
+      var tabSignup = document.getElementById('tab-signup');
+
+      if (tab === 'signup') {
+        loginWrap.classList.add('hidden');
+        signupWrap.classList.remove('hidden');
+        tabLogin.classList.remove('active');
+        tabSignup.classList.add('active');
+      } else {
+        signupWrap.classList.add('hidden');
+        loginWrap.classList.remove('hidden');
+        tabSignup.classList.remove('active');
+        tabLogin.classList.add('active');
+      }
+    }
+
+    function startGoogleLogin() {
+      var cfg = window.RMS_CONFIG || {};
+      if (!window.supabase) {
+        return showAuthError('Supabase library did not load. Check your internet connection or ad-blocker.');
+      }
+      if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_URL.includes('YOUR')) {
+        return showAuthError('config.js is missing your SUPABASE_URL or SUPABASE_ANON_KEY.');
+      }
+      var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+      sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+      }).then(function(res) {
+        if (res.error) showAuthError('Google Sign-In Error: ' + res.error.message);
+      });
+    }
+  </script>
+
   <script src="https://jsdelivr.net"></script>
-  <script src="config.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="config.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
