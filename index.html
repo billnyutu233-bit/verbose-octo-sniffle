@@ -9,12 +9,7 @@
   <link rel="preconnect" href="https://googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="style.css">
-  <script src="https://jsdelivr.net"></script>
-  <script src="config.js?v=2"></script>
-  <script defer src="app.js?v=2"></script>
-
 </head>
 <body>
   <div id="toast-region" aria-live="polite"></div>
@@ -37,8 +32,8 @@
         <div class="brand brand-dark">RMS<span>.</span></div>
 
         <div class="auth-tabs">
-          <button class="auth-tab active" data-auth-tab="login">Sign in</button>
-          <button class="auth-tab" data-auth-tab="signup">Create account</button>
+          <button type="button" class="auth-tab active" data-auth-tab="login">Sign in</button>
+          <button type="button" class="auth-tab" data-auth-tab="signup">Create account</button>
         </div>
 
         <section id="login-form-wrap">
@@ -46,7 +41,7 @@
           <h2>Sign in to your account</h2>
           <p class="subtext">Enter your details to continue to your workspace.</p>
 
-          <button id="google-login" class="google-btn">
+          <button type="button" id="google-login" class="google-btn">
             <span class="google-mark">G</span>Continue with Google
           </button>
 
@@ -62,7 +57,7 @@
             <button class="btn btn-primary full" type="submit">Sign in <span>→</span></button>
           </form>
 
-          <p class="auth-switch">New to RMS? <button data-auth-tab="signup">Create an account</button></p>
+          <p class="auth-switch">New to RMS? <button type="button" data-auth-tab="signup">Create an account</button></p>
         </section>
 
         <section id="signup-form-wrap" class="hidden">
@@ -70,7 +65,7 @@
           <h2>Create your account</h2>
           <p class="subtext">Register with your email or Google account.</p>
 
-          <button id="google-signup" class="google-btn">
+          <button type="button" id="google-signup" class="google-btn">
             <span class="google-mark">G</span>Sign up with Google
           </button>
 
@@ -89,7 +84,7 @@
             <button class="btn btn-primary full" type="submit">Create account <span>→</span></button>
           </form>
 
-          <p class="auth-switch">Already registered? <button data-auth-tab="login">Sign in</button></p>
+          <p class="auth-switch">Already registered? <button type="button" data-auth-tab="login">Sign in</button></p>
         </section>
 
         <p class="auth-legal">By continuing, you agree to use this system responsibly and protect your account credentials.</p>
@@ -114,25 +109,25 @@
 
       <p class="nav-caption">WORKSPACE</p>
       <nav class="side-nav" id="side-nav">
-        <button class="nav-link manager-only active" data-page="dashboard"><span>▦</span>Dashboard</button>
-        <button class="nav-link manager-only" data-page="shifts"><span>◷</span>Staff & Shifts</button>
-        <button class="nav-link manager-only" data-page="payroll"><span>💳</span>Payroll & Records</button>
-        <button class="nav-link manager-only" data-page="menu"><span>☷</span>Menu & Inventory</button>
-        <button class="nav-link manager-only" data-page="orders"><span>▣</span>Sales & Orders</button>
-        <button class="nav-link manager-only" data-page="reports"><span>▤</span>Reports</button>
+        <button type="button" class="nav-link manager-only active" data-page="dashboard"><span>▦</span>Dashboard</button>
+        <button type="button" class="nav-link manager-only" data-page="shifts"><span>◷</span>Staff & Shifts</button>
+        <button type="button" class="nav-link manager-only" data-page="payroll"><span>💳</span>Payroll & Records</button>
+        <button type="button" class="nav-link manager-only" data-page="menu"><span>☷</span>Menu & Inventory</button>
+        <button type="button" class="nav-link manager-only" data-page="orders"><span>▣</span>Sales & Orders</button>
+        <button type="button" class="nav-link manager-only" data-page="reports"><span>▤</span>Reports</button>
 
-        <button class="nav-link staff-only hidden" data-page="portal"><span>👤</span>My Staff Portal</button>
+        <button type="button" class="nav-link staff-only hidden" data-page="portal"><span>👤</span>My Staff Portal</button>
       </nav>
 
       <div class="sidebar-bottom">
         <div class="online-dot">System online</div>
-        <button id="logout-btn" class="logout-btn">↪ <span>Sign out</span></button>
+        <button type="button" id="logout-btn" class="logout-btn">↪ <span>Sign out</span></button>
       </div>
     </aside>
 
     <section class="main-area">
       <header class="topbar">
-        <button id="menu-toggle" class="mobile-menu" aria-label="Toggle menu">☰</button>
+        <button type="button" id="menu-toggle" class="mobile-menu" aria-label="Toggle menu">☰</button>
         <div>
           <strong>Restaurant Management System</strong>
           <small id="top-date"></small>
@@ -150,5 +145,10 @@
   </div>
 
   <div id="modal-root"></div>
+
+  <!-- Scripts placed at the bottom of body so all HTML elements exist first -->
+  <script src="https://jsdelivr.net"></script>
+  <script src="config.js?v=3"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
