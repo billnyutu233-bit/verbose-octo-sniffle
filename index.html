@@ -6,12 +6,12 @@
   <meta name="theme-color" content="#101b35">
   <title>Restaurant Management System</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://jsdelivr.net"></script>
   <script src="config.js"></script>
   <script defer src="app.js"></script>
 </head>
@@ -25,7 +25,7 @@
         <div class="visual-copy">
           <p class="eyebrow">SMART RESTAURANT OPERATIONS</p>
           <h1>Run your restaurant.<br><em>Beautifully.</em></h1>
-          <p>One connected workspace for your menu, inventory, sales and business performance.</p>
+          <p>One connected workspace for your staff, shifts, payroll, inventory and business performance.</p>
         </div>
         <div class="visual-foot">SIMPLIFY OPERATIONS · MAKE BETTER DECISIONS</div>
       </div>
@@ -112,11 +112,15 @@
       </div>
 
       <p class="nav-caption">WORKSPACE</p>
-      <nav class="side-nav">
-        <button class="nav-link active" data-page="dashboard"><span>▦</span>Dashboard</button>
-        <button class="nav-link" data-page="menu"><span>☷</span>Menu & Inventory</button>
-        <button class="nav-link" data-page="orders"><span>▣</span>Sales & Orders</button>
-        <button class="nav-link" data-page="reports"><span>▤</span>Reports</button>
+      <nav class="side-nav" id="side-nav">
+        <button class="nav-link manager-only active" data-page="dashboard"><span>▦</span>Dashboard</button>
+        <button class="nav-link manager-only" data-page="shifts"><span>◷</span>Staff & Shifts</button>
+        <button class="nav-link manager-only" data-page="payroll"><span>💳</span>Payroll & Records</button>
+        <button class="nav-link manager-only" data-page="menu"><span>☷</span>Menu & Inventory</button>
+        <button class="nav-link manager-only" data-page="orders"><span>▣</span>Sales & Orders</button>
+        <button class="nav-link manager-only" data-page="reports"><span>▤</span>Reports</button>
+
+        <button class="nav-link staff-only hidden" data-page="portal"><span>👤</span>My Staff Portal</button>
       </nav>
 
       <div class="sidebar-bottom">
