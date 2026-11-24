@@ -3,35 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101b35">
-  <title>Restaurant Management System</title>
-
-  <link rel="preconnect" href="https://googleapis.com">
-  <link rel="preconnect" href="https://gstatic.com" crossorigin>
-  <link href="https://googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>RMS</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="toast-region" aria-live="polite"></div>
+  <div id="toast-region"></div>
 
   <main id="auth-screen" class="auth-shell">
     <section class="auth-visual">
       <div class="visual-content">
         <div class="brand brand-light">RMS<span>.</span></div>
         <div class="visual-copy">
-          <p class="eyebrow">SMART RESTAURANT OPERATIONS</p>
-          <h1>Run your restaurant.<br><em>Beautifully.</em></h1>
-          <p>One connected workspace for your staff, shifts, payroll, inventory and business performance.</p>
+          <h1>Operations Portal</h1>
+          <p>Manage shifts, payroll, stock, and sales.</p>
         </div>
-        <div class="visual-foot">SIMPLIFY OPERATIONS · MAKE BETTER DECISIONS</div>
       </div>
     </section>
 
     <section class="auth-panel">
       <div class="auth-card">
         <div class="brand brand-dark">RMS<span>.</span></div>
-
-        <!-- Visible status box so you immediately see if config.js or Supabase has an issue -->
         <div id="auth-debug-msg" style="display:none;background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;"></div>
 
         <div class="auth-tabs">
@@ -40,57 +31,31 @@
         </div>
 
         <section id="login-form-wrap">
-          <p class="eyebrow">WELCOME BACK</p>
-          <h2>Sign in to your account</h2>
-          <p class="subtext">Enter your details to continue to your workspace.</p>
-
+          <h2>Sign in</h2>
           <button type="button" id="google-login" class="google-btn" onclick="startGoogleLogin()">
             <span class="google-mark">G</span>Continue with Google
           </button>
-
-          <div class="or-line"><span>OR CONTINUE WITH EMAIL</span></div>
-
+          <div class="or-line"><span>OR</span></div>
           <form id="login-form" class="form-stack">
-            <label>Email address
-              <input name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
-            </label>
-            <label>Password
-              <input name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
-            </label>
-            <button class="btn btn-primary full" type="submit">Sign in <span>→</span></button>
+            <label>Email <input name="email" type="email" required></label>
+            <label>Password <input name="password" type="password" required></label>
+            <button class="btn btn-primary full" type="submit">Sign in</button>
           </form>
-
-          <p class="auth-switch">New to RMS? <button type="button" onclick="switchAuthTab('signup')">Create an account</button></p>
         </section>
 
         <section id="signup-form-wrap" class="hidden">
-          <p class="eyebrow">GET STARTED</p>
-          <h2>Create your account</h2>
-          <p class="subtext">Register with your email or Google account.</p>
-
+          <h2>Create account</h2>
           <button type="button" id="google-signup" class="google-btn" onclick="startGoogleLogin()">
             <span class="google-mark">G</span>Sign up with Google
           </button>
-
-          <div class="or-line"><span>OR REGISTER WITH EMAIL</span></div>
-
+          <div class="or-line"><span>OR</span></div>
           <form id="signup-form" class="form-stack">
-            <label>Full name
-              <input name="name" type="text" placeholder="Your full name" autocomplete="name" required>
-            </label>
-            <label>Email address
-              <input name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
-            </label>
-            <label>Password
-              <input name="password" type="password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required>
-            </label>
-            <button class="btn btn-primary full" type="submit">Create account <span>→</span></button>
+            <label>Full name <input name="name" type="text" required></label>
+            <label>Email <input name="email" type="email" required></label>
+            <label>Password <input name="password" type="password" minlength="8" required></label>
+            <button class="btn btn-primary full" type="submit">Create account</button>
           </form>
-
-          <p class="auth-switch">Already registered? <button type="button" onclick="switchAuthTab('login')">Sign in</button></p>
         </section>
-
-        <p class="auth-legal">By continuing, you agree to use this system responsibly and protect your account credentials.</p>
       </div>
     </section>
   </main>
@@ -99,105 +64,71 @@
     <aside class="sidebar" id="sidebar">
       <a class="side-brand" href="#dashboard">
         <span class="brand">RMS<span>.</span></span>
-        <small>RESTAURANT MANAGEMENT</small>
       </a>
-
       <div class="side-user">
         <div class="avatar" id="user-avatar">R</div>
         <div>
-          <strong id="user-name">Restaurant User</strong>
-          <small id="user-email">user@email.com</small>
+          <strong id="user-name">User</strong>
+          <small id="user-email"></small>
         </div>
       </div>
-
-      <p class="nav-caption">WORKSPACE</p>
       <nav class="side-nav" id="side-nav">
-        <button type="button" class="nav-link manager-only active" data-page="dashboard"><span>▦</span>Dashboard</button>
-        <button type="button" class="nav-link manager-only" data-page="shifts"><span>◷</span>Staff & Shifts</button>
-        <button type="button" class="nav-link manager-only" data-page="payroll"><span>💳</span>Payroll & Records</button>
-        <button type="button" class="nav-link manager-only" data-page="menu"><span>☷</span>Menu & Inventory</button>
-        <button type="button" class="nav-link manager-only" data-page="orders"><span>▣</span>Sales & Orders</button>
-        <button type="button" class="nav-link manager-only" data-page="reports"><span>▤</span>Reports</button>
-
-        <button type="button" class="nav-link staff-only hidden" data-page="portal"><span>👤</span>My Staff Portal</button>
+        <button type="button" class="nav-link manager-only active" data-page="dashboard">Dashboard</button>
+        <button type="button" class="nav-link manager-only" data-page="shifts">Staff & Shifts</button>
+        <button type="button" class="nav-link manager-only" data-page="payroll">Payroll</button>
+        <button type="button" class="nav-link manager-only" data-page="menu">Inventory</button>
+        <button type="button" class="nav-link manager-only" data-page="orders">Orders</button>
+        <button type="button" class="nav-link manager-only" data-page="reports">Reports</button>
+        <button type="button" class="nav-link staff-only hidden" data-page="portal">My Portal</button>
       </nav>
-
       <div class="sidebar-bottom">
-        <div class="online-dot">System online</div>
-        <button type="button" id="logout-btn" class="logout-btn">↪ <span>Sign out</span></button>
+        <button type="button" id="logout-btn" class="logout-btn">Sign out</button>
       </div>
     </aside>
 
     <section class="main-area">
       <header class="topbar">
-        <button type="button" id="menu-toggle" class="mobile-menu" aria-label="Toggle menu">☰</button>
-        <div>
-          <strong>Restaurant Management System</strong>
-          <small id="top-date"></small>
-        </div>
-        <div class="topbar-right">
-          <span class="online-pill"><i></i> Live workspace</span>
-          <div class="top-avatar" id="top-avatar">R</div>
-        </div>
+        <button type="button" id="menu-toggle" class="mobile-menu">☰</button>
+        <div><small id="top-date"></small></div>
+        <div class="topbar-right"><div class="top-avatar" id="top-avatar">R</div></div>
       </header>
-
       <main id="page-content" class="page-content">
-        <div class="loading-state">Loading your workspace…</div>
+        <div class="loading-state">Loading…</div>
       </main>
     </section>
   </div>
 
-  <div id="modal-root"></div>
-
-  <!-- Inline failsafe script: guarantees tabs and Google button ALWAYS respond -->
   <script>
     function showAuthError(msg) {
       var box = document.getElementById('auth-debug-msg');
-      if (box) {
-        box.style.display = 'block';
-        box.textContent = msg;
-      }
+      if (box) { box.style.display = 'block'; box.textContent = msg; }
     }
-
     function switchAuthTab(tab) {
-      var loginWrap = document.getElementById('login-form-wrap');
-      var signupWrap = document.getElementById('signup-form-wrap');
-      var tabLogin = document.getElementById('tab-login');
-      var tabSignup = document.getElementById('tab-signup');
-
-      if (tab === 'signup') {
-        loginWrap.classList.add('hidden');
-        signupWrap.classList.remove('hidden');
-        tabLogin.classList.remove('active');
-        tabSignup.classList.add('active');
-      } else {
-        signupWrap.classList.add('hidden');
-        loginWrap.classList.remove('hidden');
-        tabSignup.classList.remove('active');
-        tabLogin.classList.add('active');
-      }
+      var isSignup = tab === 'signup';
+      document.getElementById('login-form-wrap').classList.toggle('hidden', isSignup);
+      document.getElementById('signup-form-wrap').classList.toggle('hidden', !isSignup);
+      document.getElementById('tab-login').classList.toggle('active', !isSignup);
+      document.getElementById('tab-signup').classList.toggle('active', isSignup);
     }
-
     function startGoogleLogin() {
       var cfg = window.RMS_CONFIG || {};
-      if (!window.supabase) {
-        return showAuthError('Supabase library did not load. Check your internet connection or ad-blocker.');
-      }
-      if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_URL.includes('YOUR')) {
-        return showAuthError('config.js is missing your SUPABASE_URL or SUPABASE_ANON_KEY.');
-      }
+      if (!window.supabase) return showAuthError('Still loading database library. Wait 2 seconds and click again.');
+      if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) return showAuthError('Missing keys in config.js.');
       var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
       sb.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin + window.location.pathname }
-      }).then(function(res) {
-        if (res.error) showAuthError('Google Sign-In Error: ' + res.error.message);
-      });
+      }).then(function(r) { if (r.error) showAuthError(r.error.message); });
     }
   </script>
 
-  <script src="supabase.js"></script>
-  <script src="config.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="config.js?v=9"></script>
+  <script type="module">
+    import { createClient } from 'https://esm.sh';
+    window.supabase = { createClient };
+    const s = document.createElement('script');
+    s.src = 'app.js?v=9';
+    document.body.appendChild(s);
+  </script>
 </body>
 </html>
