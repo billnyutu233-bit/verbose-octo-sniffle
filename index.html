@@ -5,11 +5,9 @@
  <meta name="viewport" content="width=device-width, initial-scale=1">
  <meta name="theme-color" content="#101b35">
  <title>Restaurant Management System</title>
-
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
  <link rel="stylesheet" href="style.css">
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  <script src="config.js"></script>
@@ -17,133 +15,38 @@
 </head>
 <body>
  <div id="toast-region" aria-live="polite"></div>
-
  <main id="auth-screen" class="auth-shell">
- <section class="auth-visual">
- <div class="visual-content">
- <div class="brand brand-light">RMS<span>.</span></div>
- <div class="visual-copy">
- <p class="eyebrow">SMART RESTAURANT OPERATIONS</p>
- <h1>Run your restaurant.<br><em>Beautifully.</em></h1>
- <p>One connected workspace for your menu, inventory, sales and business performance.</p>
- </div>
- <div class="visual-foot">SIMPLIFY OPERATIONS · MAKE BETTER DECISIONS</div>
- </div>
- </section>
-
- <section class="auth-panel">
- <div class="auth-card">
- <div class="brand brand-dark">RMS<span>.</span></div>
-
- <div class="auth-tabs">
- <button class="auth-tab active" data-auth-tab="login">Sign in</button>
- <button class="auth-tab" data-auth-tab="signup">Create account</button>
- </div>
-
- <section id="login-form-wrap">
- <p class="eyebrow">WELCOME BACK</p>
- <h2>Sign in to your account</h2>
- <p class="subtext">Enter your details to continue to your workspace.</p>
-
- <button id="google-login" class="google-btn">
- <span class="google-mark">G</span>Continue with Google
- </button>
-
- <div class="or-line"><span>OR CONTINUE WITH EMAIL</span></div>
-
- <form id="login-form" class="form-stack">
- <label>Email address
- <input name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
- </label>
- <label>Password
- <input name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
- </label>
- <button class="btn btn-primary full" type="submit">Sign in <span>→</span></button>
- </form>
-
- <p class="auth-switch">New to RMS? <button data-auth-tab="signup">Create an account</button></p>
- </section>
-
- <section id="signup-form-wrap" class="hidden">
- <p class="eyebrow">GET STARTED</p>
- <h2>Create your account</h2>
- <p class="subtext">Register with your email or Google account.</p>
-
- <button id="google-signup" class="google-btn">
- <span class="google-mark">G</span>Sign up with Google
- </button>
-
- <div class="or-line"><span>OR REGISTER WITH EMAIL</span></div>
-
- <form id="signup-form" class="form-stack">
- <label>Full name
- <input name="name" type="text" placeholder="Your full name" autocomplete="name" required>
- </label>
- <label>Email address
- <input name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
- </label>
- <label>Password
- <input name="password" type="password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required>
- </label>
- <button class="btn btn-primary full" type="submit">Create account <span>→</span></button>
- </form>
-
- <p class="auth-switch">Already registered? <button data-auth-tab="login">Sign in</button></p>
- </section>
-
- <p class="auth-legal">By continuing, you agree to use this system responsibly and protect your account credentials.</p>
- </div>
- </section>
+  <section class="auth-visual"><div class="visual-content">
+   <div class="brand brand-light">RMS<span>.</span></div>
+   <div class="visual-copy"><p class="eyebrow">SMART RESTAURANT OPERATIONS</p><h1>Run your restaurant.<br><em>Beautifully.</em></h1><p>One connected workspace for your menu, inventory, sales and business performance.</p></div>
+   <div class="visual-foot">SIMPLIFY OPERATIONS · MAKE BETTER DECISIONS</div>
+  </div></section>
+  <section class="auth-panel"><div class="auth-card">
+   <div class="brand brand-dark">RMS<span>.</span></div>
+   <div class="auth-tabs"><button class="auth-tab active" data-auth-tab="login">Sign in</button><button class="auth-tab" data-auth-tab="signup">Create account</button></div>
+   <section id="login-form-wrap"><p class="eyebrow">WELCOME BACK</p><h2>Sign in to your account</h2><p class="subtext">Enter your details to continue to your workspace.</p>
+    <button id="google-login" class="google-btn"><span class="google-mark">G</span>Continue with Google</button><div class="or-line"><span>OR CONTINUE WITH EMAIL</span></div>
+    <form id="login-form" class="form-stack"><label>Email address<input name="email" type="email" placeholder="you@example.com" autocomplete="email" required></label><label>Password<input name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required></label><button class="btn btn-primary full" type="submit">Sign in <span>→</span></button></form>
+    <p class="auth-switch">New to RMS? <button data-auth-tab="signup">Create an account</button></p>
+   </section>
+   <section id="signup-form-wrap" class="hidden"><p class="eyebrow">GET STARTED</p><h2>Create your account</h2><p class="subtext">Register with your email or Google account.</p>
+    <button id="google-signup" class="google-btn"><span class="google-mark">G</span>Sign up with Google</button><div class="or-line"><span>OR REGISTER WITH EMAIL</span></div>
+    <form id="signup-form" class="form-stack"><label>Full name<input name="name" type="text" placeholder="Your full name" autocomplete="name" required></label><label>Email address<input name="email" type="email" placeholder="you@example.com" autocomplete="email" required></label><label>Password<input name="password" type="password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" required></label><button class="btn btn-primary full" type="submit">Create account <span>→</span></button></form>
+    <p class="auth-switch">Already registered? <button data-auth-tab="login">Sign in</button></p>
+   </section>
+   <p class="auth-legal">By continuing, you agree to use this system responsibly and protect your account credentials.</p>
+  </div></section>
  </main>
-
  <div id="app-shell" class="app-shell hidden">
- <aside class="sidebar" id="sidebar">
- <a class="side-brand" href="#dashboard">
- <span class="brand">RMS<span>.</span></span>
- <small>RESTAURANT MANAGEMENT</small>
- </a>
-
- <div class="side-user">
- <div class="avatar" id="user-avatar">R</div>
- <div>
- <strong id="user-name">Restaurant User</strong>
- <small id="user-email">user@email.com</small>
+  <aside class="sidebar" id="sidebar"><a class="side-brand" href="#dashboard"><span class="brand">RMS<span>.</span></span><small>RESTAURANT MANAGEMENT</small></a>
+   <div class="side-user"><div class="avatar" id="user-avatar">R</div><div><strong id="user-name">Restaurant User</strong><small id="user-email">user@email.com</small></div></div>
+   <p class="nav-caption">WORKSPACE</p><nav class="side-nav"><button class="nav-link active" data-page="dashboard"><span>▦</span>Dashboard</button><button class="nav-link" data-page="menu"><span>☷</span>Menu & Inventory</button><button class="nav-link" data-page="orders"><span>▣</span>Sales & Orders</button><button class="nav-link" data-page="reports"><span>▤</span>Reports</button></nav>
+   <div class="sidebar-bottom"><div class="online-dot">System online</div><button id="logout-btn" class="logout-btn">↪ <span>Sign out</span></button></div>
+  </aside>
+  <section class="main-area"><header class="topbar"><button id="menu-toggle" class="mobile-menu" aria-label="Toggle menu">☰</button><div><strong>Restaurant Management System</strong><small id="top-date"></small></div><div class="topbar-right"><span class="online-pill"><i></i> Live workspace</span><div class="top-avatar" id="top-avatar">R</div></div></header>
+   <main id="page-content" class="page-content"><div class="loading-state">Loading your workspace...</div></main>
+  </section>
  </div>
- </div>
-
- <p class="nav-caption">WORKSPACE</p>
- <nav class="side-nav">
- <button class="nav-link active" data-page="dashboard"><span>▦</span>Dashboard</button>
- <button class="nav-link" data-page="menu"><span>☷</span>Menu & Inventory</button>
- <button class="nav-link" data-page="orders"><span>▣</span>Sales & Orders</button>
- <button class="nav-link" data-page="reports"><span>▤</span>Reports</button>
- </nav>
-
- <div class="sidebar-bottom">
- <div class="online-dot">System online</div>
- <button id="logout-btn" class="logout-btn">↪ <span>Sign out</span></button>
- </div>
- </aside>
-
- <section class="main-area">
- <header class="topbar">
- <button id="menu-toggle" class="mobile-menu" aria-label="Toggle menu">☰</button>
- <div>
- <strong>Restaurant Management System</strong>
- <small id="top-date"></small>
- </div>
- <div class="topbar-right">
- <span class="online-pill"><i></i> Live workspace</span>
- <div class="top-avatar" id="top-avatar">R</div>
- </div>
- </header>
-
- <main id="page-content" class="page-content">
- <div class="loading-state">Loading your workspace...</div>
- </main>
- </section>
- </div>
-
  <div id="modal-root"></div>
 </body>
 </html>
